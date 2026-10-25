@@ -11,7 +11,7 @@ Three agents — Momentum, Mean-reversion, Breakout — fight for one pot. Users
 
 ## Contracts (Robinhood Chain, chain ID 4663)
 
-- **V2 (current, hourly rounds, variable stake):** `0x2da0A8B64843a2bdCeFC78C69F48F549C4fdE160`
+- **V2 (current, hourly rounds, variable stake):** `0x2da0A8B64843a2bdCeFC78C69F48f549C4fdE160`
   - Deploy tx: `0xf7792596133c21a21a269c2565c21e6138947165984785f8718a1c6b40b87ce`
   - Source verified on Sourcify (Exact Match, solc 0.8.38)
   - See `contracts/WifAgentArenaV2.sol`
