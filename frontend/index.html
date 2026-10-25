@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WIF Agent Arena — Pick an agent. Take the pot.</title>
+<meta name="description" content="An hourly $WIF showdown on Robinhood Chain. Three agents, one pot, 100 to 100,000 $WIF to back your pick.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#0d0d12; --panel:#16161f; --panel2:#1e1e2c; --lime:#c8ff2e; --pink:#ff4d8d; --cyan:#3ee6ff; --violet:#8b5cff; --text:#f5f3ee; --muted:#a3a3b8; --line:#2c2c3d; }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:"Space Grotesk",system-ui,sans-serif; line-height:1.5; overflow-x:hidden}
+  body::before{content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background: radial-gradient(600px 300px at 15% -5%, rgba(200,255,46,.16), transparent 60%),
+                radial-gradient(500px 300px at 90% 10%, rgba(255,77,141,.14), transparent 60%),
+                radial-gradient(500px 400px at 50% 110%, rgba(62,230,255,.10), transparent 60%);}
+  a{color:inherit}
+  a:focus-visible, button:focus-visible, input:focus-visible{outline:3px solid var(--lime); outline-offset:3px}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 20px 80px; position:relative; z-index:1}
+  .ticker{background:var(--lime); color:#0d0d12; font-weight:700; font-size:0.85rem; overflow:hidden; white-space:nowrap; padding:9px 0; border-bottom:3px solid #0d0d12}
+  .ticker span{display:inline-block; padding-left:32px; animation:tick 22s linear infinite}
+  @keyframes tick{from{transform:translateX(0)} to{transform:translateX(-50%)}}
+  nav{display:flex; justify-content:space-between; align-items:center; padding:18px 0; gap:12px; flex-wrap:wrap}
+  .logo{font-family:"Archivo Black",sans-serif; font-size:1.05rem; letter-spacing:-0.02em}
+  .logo i{font-style:normal; color:var(--lime)}
+  .nav-right{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+  .pill{border:1.5px solid var(--line); border-radius:999px; padding:7px 14px; font-size:0.85rem; color:var(--muted)}
+  .pill b{color:var(--lime)}
+  .balance-pill{display:none; border:1.5px solid var(--lime); background:#1e1e2c; border-radius:999px; padding:8px 14px; font-weight:700; font-size:0.9rem}
+  .balance-pill.show{display:inline-block}
+  .balance-pill small{color:var(--muted); font-weight:500}
+  .balance-pill b{color:var(--lime)}
+  .connect{background:var(--lime); color:#0d0d12; border:0; border-radius:999px; padding:11px 20px; font-weight:700; font-family:inherit; cursor:pointer; transition:transform .15s ease, background .15s ease}
+  .connect:hover{background:#dcff70; transform:translateY(-1px)}
+  .connect:disabled{opacity:.6; cursor:wait}
+  .hero{padding:52px 0 28px}
+  .hero h1{font-family:"Archivo Black",sans-serif; line-height:0.95; letter-spacing:-0.03em; font-size:clamp(2.9rem,9.5vw,6.8rem); margin:0; text-transform:uppercase}
+  .hero h1 .stroke{color:transparent; -webkit-text-stroke:2px var(--text)}
+  .hero h1 .pink{color:var(--pink)}
+  .hero h1 .lime{color:var(--lime)}
+  .sub{font-size:clamp(1.05rem,2.5vw,1.35rem); color:var(--muted); max-width:56ch; margin:20px 0 0}
+  .sub b{color:var(--text)}
+  .count{display:flex; gap:12px; margin:28px 0 8px; flex-wrap:wrap}
+  .count div{background:var(--panel); border:1.5px solid var(--line); border-radius:18px; padding:14px 18px; min-width:96px; box-shadow:0 8px 30px rgba(0,0,0,.35)}
+  .count b{display:block; font-family:"JetBrains Mono",monospace; font-size:2rem; line-height:1; color:var(--lime)}
+  .count span{font-size:0.8rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em}
+  .count-note{color:var(--muted); font-size:0.9rem; margin:0 0 28px}
+  .agents{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:8px}
+  @media (max-width:820px){ .agents{grid-template-columns:1fr} }
+  .agent{background:var(--panel); border:2px solid var(--line); border-radius:24px; padding:22px; text-align:left; color:var(--text); cursor:pointer; font-family:inherit; transition:transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease}
+  .agent:hover{transform:translateY(-4px)}
+  .agent.selected{border-color:var(--lime); background:var(--panel2); box-shadow:0 0 0 3px rgba(200,255,46,.25), 0 14px 40px rgba(0,0,0,.45)}
+  .agent.hit{animation:hit .45s ease}
+  @keyframes hit{ 0%{transform:translateX(0)} 25%{transform:translateX(-7px) rotate(-1deg)} 50%{transform:translateX(6px)} 100%{transform:translateX(0)} }
+  .agent .emoji{font-size:2.6rem; line-height:1; filter:drop-shadow(0 4px 14px rgba(0,0,0,.5))}
+  .agent .fighter-img{width:100%; height:210px; object-fit:cover; object-position:top; border-radius:16px; border:2px solid var(--line); display:block; margin-bottom:14px; transition:transform .3s ease}
+  .agent:hover .fighter-img{transform:scale(1.02)}
+  .agent.hit .fighter-img{transform:scale(1.05) rotate(-1deg)}
+  .agent h3{font-family:"Archivo Black",sans-serif; font-size:1.35rem; margin:14px 0 4px; text-transform:uppercase}
+  .agent p{color:var(--muted); margin:0 0 16px; font-size:0.95rem}
+  .bar{height:12px; background:#2c2c3d; border-radius:99px; overflow:hidden}
+  .bar i{display:block; height:100%; border-radius:99px; transition:width .7s cubic-bezier(.2,.9,.2,1)}
+  .agent:nth-child(1) .bar i{background:linear-gradient(90deg,var(--cyan),#8bf3ff)}
+  .agent:nth-child(2) .bar i{background:linear-gradient(90deg,var(--violet),#c4a8ff)}
+  .agent:nth-child(3) .bar i{background:linear-gradient(90deg,var(--lime),#e6ff8a)}
+  .stats{display:flex; justify-content:space-between; margin-top:10px; font-family:"JetBrains Mono",monospace; font-size:0.85rem}
+  .tag{display:inline-block; margin-top:14px; font-size:0.8rem; font-weight:700; padding:5px 10px; border-radius:99px; background:#2c2c3d; color:var(--muted)}
+  .agent.selected .tag{background:var(--lime); color:#0d0d12}
+  .feed{margin-top:16px; background:#1e1e2c; border:1.5px solid var(--lime); border-radius:16px; padding:16px 20px; font-size:0.98rem; min-height:3.2em; box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .feed b{color:var(--lime)}
+  .feed-note{color:var(--muted); font-size:0.85rem; margin-top:8px}
+  .pick{margin-top:16px; background:linear-gradient(120deg,#c8ff2e,#3ee6ff); color:#0d0d12; border-radius:24px; padding:24px; display:flex; justify-content:space-between; gap:20px; align-items:flex-start; flex-wrap:wrap; box-shadow:0 18px 50px rgba(200,255,46,.18)}
+  .pick h3{font-family:"Archivo Black",sans-serif; font-size:1.4rem; margin:0 0 4px; text-transform:uppercase}
+  .pick p{margin:0; font-weight:500; max-width:52ch}
+  .amount-row{display:flex; gap:10px; align-items:center; margin-top:14px; flex-wrap:wrap}
+  .amount-row label{font-weight:700}
+  .amount-row input{width:170px; border:2px solid #0d0d12; border-radius:12px; padding:10px 12px; font-family:"JetBrains Mono",monospace; font-size:1rem; font-weight:700; background:#fff; color:#0d0d12}
+  .amount-row span{font-size:0.85rem; font-weight:500}
+  .enter-btn{background:#0d0d12; color:#f5f3ee; border:0; border-radius:14px; padding:14px 22px; font-weight:700; font-family:inherit; font-size:1rem; cursor:pointer; margin-top:14px; transition:transform .15s ease}
+  .enter-btn:hover{transform:translateY(-1px)}
+  .enter-btn:disabled{opacity:.55; cursor:not-allowed}
+  .status{margin-top:12px; font-size:0.9rem; min-height:1.4em}
+  .status a{color:#0d0d12; font-weight:700}
+  .pick .price{font-family:"JetBrains Mono",monospace; font-size:1.8rem; font-weight:700}
+  .pick .price small{display:block; font-family:"Space Grotesk",sans-serif; font-size:0.85rem; font-weight:500}
+  .split{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:28px}
+  @media (max-width:640px){ .split{grid-template-columns:1fr} }
+  .split div{background:var(--panel); border:1.5px solid var(--line); border-radius:20px; padding:20px}
+  .split b{display:block; font-family:"Archivo Black",sans-serif; font-size:1.9rem}
+  .split span{color:var(--muted); font-size:0.9rem}
+  .split div:nth-child(1) b{color:var(--lime)} .split div:nth-child(2) b{color:var(--pink)} .split div:nth-child(3) b{color:var(--cyan)}
+  h2{font-family:"Archivo Black",sans-serif; font-size:clamp(1.6rem,4vw,2.4rem); text-transform:uppercase; letter-spacing:-0.02em; margin:56px 0 8px}
+  .sec-note{color:var(--muted); max-width:60ch; margin:0 0 20px}
+  ol.flow{list-style:none; padding:0; margin:0; display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+  @media (max-width:820px){ ol.flow{grid-template-columns:1fr} }
+  ol.flow li{background:var(--panel); border:1.5px solid var(--line); border-radius:20px; padding:20px}
+  ol.flow b{display:block; font-family:"JetBrains Mono",monospace; color:var(--lime); margin-bottom:8px}
+  footer{margin-top:56px; padding-top:20px; border-top:1.5px solid var(--line); color:var(--muted); font-size:0.85rem}
+  footer a{color:var(--muted)}
+
+  /* --- Real fight animation (visual only) --- */
+  .agent{position:relative; overflow:visible}
+  .agent.attack{border-color:var(--lime); box-shadow:0 0 0 3px rgba(200,255,46,.3), 0 14px 40px rgba(0,0,0,.5)}
+  .agent.attack .fighter-img{transform:translateY(-12px) scale(1.12) rotate(-2deg)}
+  .agent.defend{animation:defendShake .45s ease}
+  .agent.defend .fighter-img{filter:brightness(1.5) saturate(1.5)}
+  @keyframes defendShake{ 0%{transform:translateX(0)} 20%{transform:translateX(-12px) rotate(-2deg)} 40%{transform:translateX(10px) rotate(1deg)} 60%{transform:translateX(-7px)} 100%{transform:translateX(0)} }
+  .impact{position:absolute; left:50%; top:96px; transform:translate(-50%,-50%) scale(0); font-size:3.2rem; z-index:3; pointer-events:none; filter:drop-shadow(0 4px 14px rgba(0,0,0,.6))}
+  .impact.show{animation:impactPop .65s ease forwards}
+  @keyframes impactPop{ 0%{transform:translate(-50%,-50%) scale(0) rotate(-25deg); opacity:1} 35%{transform:translate(-50%,-50%) scale(1.5) rotate(10deg); opacity:1} 100%{transform:translate(-50%,-50%) scale(1.1) rotate(0deg); opacity:0} }
+  .arena-shake{animation:arenaShake .4s ease}
+  @keyframes arenaShake{ 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 50%{transform:translateX(4px)} 75%{transform:translateX(-3px)} }
+  .fight-controls{display:flex; gap:10px; align-items:center; margin-top:14px; flex-wrap:wrap}
+  .fight-controls button{background:var(--panel2); color:var(--text); border:1.5px solid var(--line); border-radius:999px; padding:9px 16px; font-weight:700; font-family:inherit; cursor:pointer}
+  .fight-controls button:hover{border-color:var(--lime)}
+  .fight-score{font-family:"JetBrains Mono",monospace; font-size:0.85rem; color:var(--muted)}
+  .fight-score b{color:var(--lime)}
+
+  /* --- Full-fight cinematic: ends with one winner --- */
+  .agent.ko{opacity:.75}
+  .agent.ko .fighter-img{filter:grayscale(1) brightness(.8); transform:translateY(24px) rotate(14deg) scale(.92)}
+  .agent.winner{border-color:#ffd500; box-shadow:0 0 0 3px rgba(255,213,0,.4), 0 14px 40px rgba(0,0,0,.5)}
+  .agent.winner .fighter-img{animation:winnerBounce .8s ease-in-out infinite}
+  @keyframes winnerBounce{ 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-14px) scale(1.06)} }
+  .confetti{position:absolute; top:0; width:10px; height:14px; z-index:4; pointer-events:none; animation:confettiFall 2.8s ease-in forwards}
+  @keyframes confettiFall{ to{transform:translateY(340px) rotate(720deg); opacity:0} }
+
+  .winner-video{display:none; margin-top:16px; background:var(--panel); border:2px solid #ffd500; border-radius:24px; padding:20px}
+  .winner-video.show{display:block}
+  .winner-video h3{font-family:"Archivo Black",sans-serif; margin:0 0 10px; text-transform:uppercase}
+  .winner-video video{width:100%; border-radius:16px; display:block; background:#000}
+  .winner-video p{color:var(--muted); margin:10px 0 0; font-size:0.9rem}
+  @media (prefers-reduced-motion:reduce){ .ticker span{animation:none} .agent{transition:none} .agent.attack .fighter-img,.agent.defend .fighter-img{transform:none; filter:none} .impact{display:none} }
+</style>
+</head>
+<body>
+  <div class="ticker" aria-hidden="true"><span>HOURLY FIGHTS ARE LIVE ✦ 100 – 100,000 $WIF TO ENTER ✦ 50% PRIZE ✦ 30% BURN ✦ 20% NEXT ROUND ✦ ROBINHOOD CHAIN ✦ HOURLY FIGHTS ARE LIVE ✦ 100 – 100,000 $WIF TO ENTER ✦ 50% PRIZE ✦ 30% BURN ✦ 20% NEXT ROUND ✦ ROBINHOOD CHAIN ✦&nbsp;</span></div>
+  <div class="wrap">
+    <nav>
+      <div class="logo">WIF<i>ARENA</i></div>
+      <div class="nav-right">
+        <div class="pill">Hourly · <b>Live</b> · Robinhood Chain</div>
+        <span class="balance-pill" id="balance-pill"><small>balance ·</small> <b id="balance-val">—</b> $WIF</span>
+        <button class="connect" id="connect-btn" type="button">Connect wallet</button>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <h1>Pick an agent.<br><span class="stroke">Take the</span> <span class="pink">pot.</span></h1>
+      <p class="sub">Three agents, one hourly showdown, <b>100 to 100,000 $WIF</b> to back your pick. When the hour ends, the winning agent's backers split the prize — the rest burns or seeds the next fight.</p>
+      <div class="count" aria-label="Time left in this round">
+        <div><b id="cd-h">--</b><span>hours</span></div>
+        <div><b id="cd-m">--</b><span>minutes</span></div>
+        <div><b id="cd-s">--</b><span>seconds</span></div>
+      </div>
+      <p class="count-note" id="count-note">Connect your wallet to see the live round clock from chain. V2 rounds run 1 hour each.</p>
+    </section>
+
+    <section aria-label="Fight arena">
+      <div class="agents" id="agents">
+        <button class="agent" data-agent="Momentum" type="button">
+          <img class="fighter-img" src="assets/media-generation-agent-momentum-plush-0-56146a9e-ca13-42e8-9112-9202ea25a42d.webp" alt="Momentum, fighter agent"><span class="impact" aria-hidden="true">💥</span>
+          <h3>Momentum</h3>
+          <p>Rides the trend. Steady pressure, no drama.</p>
+          <div class="bar"><i style="width:0%"></i></div>
+          <div class="stats"><span>share <b class="share">0%</b></span><span><b class="total">0</b> $WIF</span></div>
+          <span class="tag">No backers yet</span>
+        </button>
+        <button class="agent" data-agent="Mean-reversion" type="button">
+          <img class="fighter-img" src="assets/media-generation-agent-mean-reversion-plush-0-eddb3b53-463c-4285-8b5b-cc0b62639327.webp" alt="Mean-reversion, fighter agent"><span class="impact" aria-hidden="true">💥</span>
+          <h3>Mean-reversion</h3>
+          <p>Fades the move. Buys the dip, sells the hype.</p>
+          <div class="bar"><i style="width:0%"></i></div>
+          <div class="stats"><span>share <b class="share">0%</b></span><span><b class="total">0</b> $WIF</span></div>
+          <span class="tag">No backers yet</span>
+        </button>
+        <button class="agent selected" data-agent="Breakout" type="button">
+          <img class="fighter-img" src="assets/media-generation-agent-breakout-plush-0-c74d13bf-5bee-4563-9c4d-22b95c21e421.webp" alt="Breakout, fighter agent"><span class="impact" aria-hidden="true">💥</span>
+          <h3>Breakout</h3>
+          <p>Backs the break. The crowd favourite so far.</p>
+          <div class="bar"><i style="width:0%"></i></div>
+          <div class="stats"><span>share <b class="share">0%</b></span><span><b class="total">0</b> $WIF</span></div>
+          <span class="tag">Tap to pick</span>
+        </button>
+      </div>
+      <div class="feed" id="fight-feed">🥊 <b>ARENA:</b> the bell hasn't rung yet — connect and back an agent to start the fight.</div>
+      <div class="fight-controls">
+        <button id="fight-toggle" type="button">⏸ Pause fight</button>
+        <button id="fight-now" type="button">🥊 Fight now!</button>
+        <button id="fight-full" type="button">🎬 Play full fight — until one wins</button>
+        <button id="winner-demo-btn" type="button">▶ Momentum win video (demo)</button>
+        <button id="winner-demo-btn-2" type="button">▶ Mean-reversion win video (demo)</button>
+        <button id="winner-demo-btn-3" type="button">▶ Breakout win video (demo)</button>
+        <span class="fight-score" id="fight-score">Hits landed — <b>Momentum 0</b> · <b>Mean-reversion 0</b> · <b>Breakout 0</b> (visual only)</span>
+      </div>
+      <p class="feed-note">Fight visual: the plush fighters take turns lunging, punching and shaking the arena — but the bars are the real backed $WIF per agent, read live from the V2 contract. Hits, impact bursts and hit counts are animation only — agents do not trade live yet, the owner settles the winner at the end of the hour.</p>
+
+      <div class="winner-video" id="winner-video">
+        <h3 id="winner-video-title">🏆 Winner video</h3>
+        <video id="winner-video-el" controls playsinline preload="metadata" style="display:none"></video>
+        <p id="winner-video-note"></p>
+      </div>
+
+      <div class="pick">
+        <div>
+          <h3 id="pick-title">Your pick: Breakout</h3>
+          <p id="pick-desc">Tap another agent above to change your pick. Then connect your wallet and hit Enter — this page will ask your wallet to approve exactly your stake and enter, in that order. You sign both, nothing moves without your signature.</p>
+          <div class="amount-row">
+            <label for="amount-input">Stake</label>
+            <input id="amount-input" type="number" min="100" max="100000" step="1" value="100" inputmode="decimal">
+            <span>$WIF · min 100, max 100,000 per enter</span>
+          </div>
+          <button class="enter-btn" id="enter-btn" type="button" disabled>Connect wallet to enter</button>
+          <div class="status" id="play-status"></div>
+        </div>
+        <div class="price"><span id="pick-amount">100</span> $WIF<small>your stake · 50 / 30 / 20 split</small></div>
+      </div>
+
+      <div class="split">
+        <div><b id="split-prize">— $WIF</b><span>Prize pool at settlement — split by $WIF backed on the winner</span></div>
+        <div><b id="split-burn">— $WIF</b><span>Burned at settlement — gone from supply, by the contract</span></div>
+        <div><b id="split-next">— $WIF</b><span>Seeded into the next round — the pot never starts from zero</span></div>
+      </div>
+      <p class="sec-note" style="margin-top:12px">Split is 50 / 30 / 20 of whatever is collected this round. More backing = a bigger pot, same split.</p>
+    </section>
+
+    <section>
+      <h2>How it plays</h2>
+      <p class="sec-note">You enter from this page, in your own wallet. This site never sees your private key — every move is a transaction you review and sign in Rabby or MetaMask.</p>
+      <ol class="flow">
+        <li><b>01 / Enter</b>Approve exactly your stake to the V2 arena, then enter with your agent's number: 1, 2, or 3.</li>
+        <li><b>02 / Fight for an hour</b>The round runs 1 hour. Watch the bars move as backers pile in.</li>
+        <li><b>03 / Settle &amp; claim</b>Owner settles the winning agent, the burn and seed happen, winners claim their share.</li>
+      </ol>
+    </section>
+
+    <footer>
+      <p>V2 arena contract 0x2da0A8B64843a2bdCeFC78C69F48F549C4fdE160 · source verified on Sourcify (Exact Match) · not audited · for the worldisflat.fun hackathon. V1 arena (daily rounds) is a separate contract and is untouched.</p>
+      <p><a href="https://robinhoodchain.blockscout.com/address/0x2da0A8B64843a2bdCeFC78C69F48F549C4fdE160">V2 on Blockscout</a> · <a href="https://repo.sourcify.dev/4663/0x2da0A8B64843a2bdCeFC78C69F48f549C4fdE160">V2 on Sourcify</a> · <a href="https://robinhoodchain.blockscout.com/tx/0xf7792596133c21a21a269c2565c21e6138947165984785f8718a1c6b40b87ce">V2 deploy</a></p>
+    </footer>
+  </div>
+<script>
+  // Fight picker + commentary animation (visual only — bars come from chain).
+  const cards = document.querySelectorAll('#agents .agent');
+  const agentIds = { 'Momentum': 1, 'Mean-reversion': 2, 'Breakout': 3 };
+  let pickedAgent = 'Breakout';
+  const feedEl = document.getElementById('fight-feed');
+  // Fight engine: fighters take turns — attacker lunges, defender shakes,
+  // impact burst pops, arena shakes, commentary follows the action.
+  // Visual only: hit counts never change the real $WIF bars from chain.
+  const fighters = ['Momentum','Mean-reversion','Breakout'];
+  const hits = { 'Momentum': 0, 'Mean-reversion': 0, 'Breakout': 0 };
+  const verbs = ['lands a clean punch on', 'slams into', 'catches', 'rocks', 'drops a combo on'];
+  const bursts = ['💥', '💢', '⭐', '🔥'];
+  const arenaEl = document.querySelector('section[aria-label="Fight arena"]');
+  const scoreEl = document.getElementById('fight-score');
+  const toggleBtn = document.getElementById('fight-toggle');
+  const nowBtn = document.getElementById('fight-now');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let fightTimer = null, fighting = false;
+  function cardOf(name){ return document.querySelector('[data-agent="' + name + '"]'); }
+  function renderScore(){
+    scoreEl.innerHTML = 'Hits landed — <b>Momentum ' + hits['Momentum'] + '</b> · <b>Mean-reversion ' + hits['Mean-reversion'] + '</b> · <b>Breakout ' + hits['Breakout'] + '</b> (visual only)';
+  }
+  function fightRound(){
+    if (reduceMotion) return;
+    const attacker = fighters[Math.floor(Math.random() * 3)];
+    let defender = fighters[Math.floor(Math.random() * 3)];
+    if (defender === attacker) defender = fighters[(fighters.indexOf(attacker) + 1) % 3];
+    const aCard = cardOf(attacker), dCard = cardOf(defender);
+    const verb = verbs[Math.floor(Math.random() * verbs.length)];
+    feedEl.innerHTML = '🥊 <b>ARENA:</b> ' + attacker + ' lunges at ' + defender + '…';
+    aCard.classList.add('attack');
+    setTimeout(() => {
+      aCard.classList.remove('attack');
+      dCard.classList.remove('defend'); void dCard.offsetWidth; dCard.classList.add('defend');
+      const burst = dCard.querySelector('.impact');
+      burst.textContent = bursts[Math.floor(Math.random() * bursts.length)];
+      burst.classList.remove('show'); void burst.offsetWidth; burst.classList.add('show');
+      arenaEl.classList.remove('arena-shake'); void arenaEl.offsetWidth; arenaEl.classList.add('arena-shake');
+      hits[attacker]++; renderScore();
+      feedEl.innerHTML = '🥊 <b>ARENA:</b> ' + attacker + ' ' + verb + ' ' + defender + '! ' + defender + ' staggers — the crowd goes wild.';
+      setTimeout(() => dCard.classList.remove('defend'), 500);
+    }, 380);
+  }
+  function startFight(){
+    if (fightTimer || reduceMotion) return;
+    fighting = true; toggleBtn.textContent = '⏸ Pause fight';
+    fightTimer = setInterval(fightRound, 3200);
+    fightRound();
+  }
+  function stopFight(){
+    fighting = false; toggleBtn.textContent = '▶ Resume fight';
+    clearInterval(fightTimer); fightTimer = null;
+  }
+  toggleBtn.addEventListener('click', () => { fighting ? stopFight() : startFight(); });
+  // Full-fight cinematic: scripted bout that ends with ONE winner.
+  // Demo only — it never changes the real $WIF bars or the real round result.
+  const fullBtn = document.getElementById('fight-full');
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  function clearCinematic(){
+    fighters.forEach(n => { const c = cardOf(n); c.classList.remove('ko','winner','attack','defend'); });
+    document.querySelectorAll('.confetti').forEach(el => el.remove());
+  }
+  async function strike(att, def){
+    const aCard = cardOf(att), dCard = cardOf(def);
+    feedEl.innerHTML = '🥊 <b>ARENA:</b> ' + att + ' lunges at ' + def + '…';
+    aCard.classList.add('attack'); await sleep(380);
+    aCard.classList.remove('attack');
+    dCard.classList.remove('defend'); void dCard.offsetWidth; dCard.classList.add('defend');
+    const burst = dCard.querySelector('.impact');
+    burst.textContent = '💥'; burst.classList.remove('show'); void burst.offsetWidth; burst.classList.add('show');
+    arenaEl.classList.remove('arena-shake'); void arenaEl.offsetWidth; arenaEl.classList.add('arena-shake');
+    hits[att]++; renderScore();
+    feedEl.innerHTML = '🥊 <b>ARENA:</b> ' + att + ' lands a heavy hit on ' + def + '!';
+    await sleep(650); dCard.classList.remove('defend');
+  }
+  function knockOut(name){
+    const c = cardOf(name);
+    const burst = c.querySelector('.impact');
+    burst.textContent = '💫'; burst.classList.remove('show'); void burst.offsetWidth; burst.classList.add('show');
+    c.classList.add('ko');
+    feedEl.innerHTML = '🥊 <b>ARENA:</b> ' + name + ' is KNOCKED OUT! 💫';
+  }
+  function celebrate(name){
+    const c = cardOf(name); c.classList.add('winner');
+    const colors = ['#c8ff2e','#ff4d8d','#3ee6ff','#ffd500','#8b5cff'];
+    for (let i = 0; i < 28; i++){
+      const s = document.createElement('span'); s.className = 'confetti';
+      s.style.left = (4 + Math.random() * 92) + '%';
+      s.style.background = colors[i % colors.length];
+      s.style.animationDelay = (Math.random() * 0.7) + 's';
+      arenaEl.appendChild(s);
+    }
+    feedEl.innerHTML = '🏆 <b>WINNER:</b> ' + name + ' takes the fight! (Demo animation only — the real round winner is settled onchain at the end of the hour.)';
+  }
+  async function playFullFight(){
+    if (fullBtn.disabled) return;
+    fullBtn.disabled = true; stopFight();
+    clearCinematic(); renderScore();
+    const winner = fighters[Math.floor(Math.random() * 3)];
+    const losers = fighters.filter(n => n !== winner);
+    feedEl.innerHTML = '🎬 <b>THE FIGHT BEGINS…</b> three fighters enter, only one leaves standing.';
+    await sleep(1100);
+    await strike(winner, losers[0]); await strike(losers[0], winner); await strike(winner, losers[0]);
+    knockOut(losers[0]); await sleep(1300);
+    await strike(winner, losers[1]); await strike(losers[1], winner); await strike(losers[1], winner); await strike(winner, losers[1]);
+    knockOut(losers[1]); await sleep(1300);
+    celebrate(winner);
+    fullBtn.disabled = false; fullBtn.textContent = '🔁 Replay full fight';
+  }
+  fullBtn.addEventListener('click', playFullFight);
+  document.getElementById('winner-demo-btn').addEventListener('click', () => {
+    const wv = document.getElementById('winner-video');
+    const wvEl = document.getElementById('winner-video-el');
+    document.getElementById('winner-video-title').textContent = '🏆 Demo: Momentum wins';
+    wvEl.src = 'assets/fight-momentum-wins.mp4'; wvEl.style.display = 'block';
+    document.getElementById('winner-video-note').textContent = 'Demo preview only — this does NOT mean Momentum won the live round. The real winner video appears only after the round is settled onchain.';
+    wv.classList.add('show'); wv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    wvEl.play().catch(() => {});
+  });
+  document.getElementById('winner-demo-btn-2').addEventListener('click', () => {
+    const wv = document.getElementById('winner-video');
+    const wvEl = document.getElementById('winner-video-el');
+    document.getElementById('winner-video-title').textContent = '🏆 Demo: Mean-reversion wins';
+    wvEl.src = 'assets/fight-mean-reversion-wins.mp4'; wvEl.style.display = 'block';
+    document.getElementById('winner-video-note').textContent = 'Demo preview only — this does NOT mean Mean-reversion won the live round. The real winner video appears only after the round is settled onchain.';
+    wv.classList.add('show'); wv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    wvEl.play().catch(() => {});
+  });
+  document.getElementById('winner-demo-btn-3').addEventListener('click', () => {
+    const wv = document.getElementById('winner-video');
+    const wvEl = document.getElementById('winner-video-el');
+    document.getElementById('winner-video-title').textContent = '🏆 Demo: Breakout wins';
+    wvEl.src = 'assets/fight-breakout-wins.mp4'; wvEl.style.display = 'block';
+    document.getElementById('winner-video-note').textContent = 'Demo preview only — this does NOT mean Breakout won the live round. The real winner video appears only after the round is settled onchain.';
+    wv.classList.add('show'); wv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    wvEl.play().catch(() => {});
+  });
+  nowBtn.addEventListener('click', fightRound);
+  renderScore();
+  if (!reduceMotion) startFight(); else { feedEl.innerHTML = '🥊 <b>ARENA:</b> reduced-motion is on — hit “Fight now!” to play one round.'; }
+  cards.forEach(c => c.addEventListener('click', () => {
+    cards.forEach(x => x.classList.remove('selected'));
+    c.classList.add('selected');
+    pickedAgent = c.dataset.agent;
+    document.getElementById('pick-title').textContent = 'Your pick: ' + pickedAgent;
+  }));
+  const amountInput = document.getElementById('amount-input');
+  const pickAmountEl = document.getElementById('pick-amount');
+  amountInput.addEventListener('input', () => { pickAmountEl.textContent = amountInput.value || '0'; });
+  let roundEndMs = 0;
+  function tick(){
+    if (!roundEndMs){ return; }
+    let d = Math.max(0, roundEndMs - Date.now());
+    const h = Math.floor(d / 3600000); d -= h * 3600000;
+    const m = Math.floor(d / 60000); d -= m * 60000;
+    const s = Math.floor(d / 1000);
+    document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
+    document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
+    document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
+  }
+  setInterval(tick, 1000);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.0/dist/ethers.umd.min.js"></script>
+<script>
+  // Real play, from this page. No key ever touches this page: the wallet signs.
+  const ARENA = '0x2da0A8B64843a2bdCeFC78C69F48F549C4fdE160';
+  const WIF = '0x5173b8eA6923c2d40267890D45C46a3480954773';
+  const CHAIN_ID = 4663;
+  const ARENA_ABI = [
+    'function enter(uint256 agentId, uint256 amount) external',
+    'function roundInfo(uint256 roundId) external view returns (uint256 startTime, uint256 endTime, bool settled, uint256 winningAgent, uint256 prizePool, uint256 totalCollected, uint256 totalBackings)',
+    'function currentRoundId() external view returns (uint256)',
+    'function agentTotal(uint256 roundId, uint256 agentId) external view returns (uint256)'
+  ];
+  const WIF_ABI = [
+    'function approve(address spender, uint256 amount) external returns (bool)',
+    'function allowance(address owner, address spender) external view returns (uint256)',
+    'function balanceOf(address account) external view returns (uint256)'
+  ];
+  const EXPLORER = 'https://robinhoodchain.blockscout.com/tx/';
+  const statusEl = document.getElementById('play-status');
+  const connectBtn = document.getElementById('connect-btn');
+  const enterBtn = document.getElementById('enter-btn');
+  const balancePill = document.getElementById('balance-pill');
+  const balanceVal = document.getElementById('balance-val');
+  let provider, signer, userAddress;
+  function setStatus(html){ statusEl.innerHTML = html; }
+  function short(addr){ return addr.slice(0,6) + '…' + addr.slice(-4); }
+  function fmt(n){ return Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+  function renderTotals(totals, totalCollected){
+    const names = ['Momentum','Mean-reversion','Breakout'];
+    names.forEach((name, i) => {
+      const card = document.querySelector('[data-agent="' + name + '"]');
+      const amt = totals[i];
+      const share = totalCollected > 0 ? (amt / totalCollected * 100) : 0;
+      card.querySelector('.bar i').style.width = share + '%';
+      card.querySelector('.share').textContent = share.toFixed(0) + '%';
+      card.querySelector('.total').textContent = fmt(amt);
+      card.querySelector('.tag').textContent = amt > 0 ? fmt(amt) + ' $WIF backed' : 'No backers yet';
+    });
+    document.getElementById('split-prize').textContent = fmt(totalCollected * 0.5) + ' $WIF';
+    document.getElementById('split-burn').textContent = fmt(totalCollected * 0.3) + ' $WIF';
+    document.getElementById('split-next').textContent = fmt(totalCollected * 0.2) + ' $WIF';
+  }
+  async function refreshChain(){
+    if (!provider) return;
+    try {
+      const arena = new ethers.Contract(ARENA, ARENA_ABI, provider);
+      const roundId = await arena.currentRoundId();
+      const info = await arena.roundInfo(roundId);
+      roundEndMs = Number(info[1]) * 1000; tick();
+      const totals = [];
+      for (let id = 1; id <= 3; id++){ totals.push(Number(ethers.formatUnits(await arena.agentTotal(roundId, id), 18))); }
+      const totalCollected = Number(ethers.formatUnits(info[5], 18));
+      renderTotals(totals, totalCollected);
+      document.getElementById('count-note').textContent =
+        'Round ' + roundId + ' onchain · ' + fmt(totalCollected) + ' $WIF collected · ' + info[6] + ' entries · ' + (info[2] ? 'settled' : 'not settled yet') + ' · rounds run 1 hour each';
+      // Winner video: only after the round is SETTLED onchain, and only the
+      // video of the actual settled winning agent. Until then, nothing plays.
+      const winnerNames = ['', 'Momentum', 'Mean-reversion', 'Breakout'];
+      const winnerVideos = { 1: 'assets/fight-momentum-wins.mp4', 2: 'assets/fight-mean-reversion-wins.mp4', 3: 'assets/fight-breakout-wins.mp4' };
+      const wv = document.getElementById('winner-video');
+      const wvEl = document.getElementById('winner-video-el');
+      const wvTitle = document.getElementById('winner-video-title');
+      const wvNote = document.getElementById('winner-video-note');
+      if (info[2] && info[3] >= 1 && info[3] <= 3) {
+        const wName = winnerNames[Number(info[3])];
+        wv.classList.add('show');
+        wvTitle.textContent = '🏆 Round ' + roundId + ' winner: ' + wName;
+        if (winnerVideos[Number(info[3])]) {
+          wvEl.src = winnerVideos[Number(info[3])]; wvEl.style.display = 'block';
+          wvNote.textContent = 'This is the official win video for this settled round — the winner was decided onchain by settle(), not by this video.';
+        } else {
+          wvEl.removeAttribute('src'); wvEl.style.display = 'none';
+          wvNote.textContent = 'The ' + wName + ' win video has not been uploaded yet — it will appear here automatically once it is added.';
+        }
+      } else {
+        wv.classList.remove('show');
+      }
+    } catch (e) { /* keep the last render if a read fails */ }
+  }
+  async function ensureChain(){
+    const chainHex = '0x' + CHAIN_ID.toString(16);
+    try {
+      await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: chainHex }] });
+    } catch (e) {
+      if (e && e.code === 4902) {
+        await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{
+          chainId: chainHex, chainName: 'Robinhood Chain',
+          rpcUrls: ['https://rpc.mainnet.chain.robinhood.com'],
+          nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+          blockExplorerUrls: ['https://robinhoodchain.blockscout.com']
+        }]});
+      } else { throw e; }
+    }
+  }
+  connectBtn.addEventListener('click', async () => {
+    if (!window.ethereum) { setStatus('No wallet found in this browser. Install Rabby or MetaMask, then try again.'); return; }
+    if (typeof ethers === 'undefined') { setStatus('Wallet library failed to load (offline?). Reload the page and try again.'); return; }
+    try {
+      connectBtn.disabled = true; connectBtn.textContent = 'Connecting…';
+      await ensureChain();
+      provider = new ethers.BrowserProvider(window.ethereum);
+      signer = await provider.getSigner();
+      userAddress = await signer.getAddress();
+      connectBtn.textContent = 'Connected: ' + short(userAddress);
+      const wif = new ethers.Contract(WIF, WIF_ABI, provider);
+      const bal = await wif.balanceOf(userAddress);
+      const balWif = Number(ethers.formatUnits(bal, 18));
+      balanceVal.textContent = fmt(balWif);
+      balancePill.classList.add('show');
+      enterBtn.disabled = false; enterBtn.textContent = 'Enter';
+      setStatus('Connected on Robinhood Chain.');
+      await refreshChain();
+      setInterval(refreshChain, 30000);
+    } catch (e) {
+      connectBtn.disabled = false; connectBtn.textContent = 'Connect wallet';
+      setStatus('Could not connect: ' + (e && e.message ? e.message : e) + ' Check that your wallet is on Robinhood Chain (4663).');
+    }
+  });
+  enterBtn.addEventListener('click', async () => {
+    if (!signer) return;
+    const agentId = agentIds[pickedAgent];
+    const rawStr = (amountInput.value || '').trim();
+    const amountNum = Number(rawStr);
+    if (!Number.isFinite(amountNum) || amountNum < 100 || amountNum > 100000){
+      setStatus('Stake must be between 100 and 100,000 $WIF.');
+      return;
+    }
+    const amountRaw = ethers.parseUnits(rawStr, 18);
+    try {
+      enterBtn.disabled = true; enterBtn.textContent = 'Working…';
+      const wif = new ethers.Contract(WIF, WIF_ABI, signer);
+      const arena = new ethers.Contract(ARENA, ARENA_ABI, signer);
+      const allowed = await wif.allowance(userAddress, ARENA);
+      if (allowed < amountRaw) {
+        setStatus('Step 1 of 2: approve exactly ' + amountNum + ' $WIF in your wallet…');
+        const tx1 = await wif.approve(ARENA, amountRaw);
+        setStatus('Approve sent: <a href="' + EXPLORER + tx1.hash + '" target="_blank" rel="noopener">view on Blockscout</a> — waiting for confirmation…');
+        await tx1.wait();
+      }
+      setStatus('Step 2 of 2: enter ' + pickedAgent + ' (agent ' + agentId + ') with ' + amountNum + ' $WIF…');
+      const tx2 = await arena.enter(agentId, amountRaw);
+      setStatus('Enter sent: <a href="' + EXPLORER + tx2.hash + '" target="_blank" rel="noopener">view on Blockscout</a> — waiting for confirmation…');
+      await tx2.wait();
+      setStatus('You are in! ' + pickedAgent + ' backed with ' + amountNum + ' $WIF. Tx: <a href="' + EXPLORER + tx2.hash + '" target="_blank" rel="noopener">view on Blockscout</a>');
+      enterBtn.textContent = 'Entered ✓';
+      await refreshChain();
+      const bal = await new ethers.Contract(WIF, WIF_ABI, provider).balanceOf(userAddress);
+      balanceVal.textContent = fmt(Number(ethers.formatUnits(bal, 18)));
+    } catch (e) {
+      enterBtn.disabled = false; enterBtn.textContent = 'Enter';
+      const msg = (e && e.message) ? e.message : String(e);
+      if (msg.includes('user rejected') || msg.includes('User denied')) setStatus('You rejected the transaction in your wallet. Nothing moved. Try again when ready.');
+      else setStatus('Enter failed: ' + msg + ' Check your $WIF balance and that the round is still open.');
+    }
+  });
+</script>
+</body>
+</html>
