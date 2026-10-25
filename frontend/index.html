@@ -155,7 +155,7 @@
         <div><b id="cd-m">--</b><span>minutes</span></div>
         <div><b id="cd-s">--</b><span>seconds</span></div>
       </div>
-      <p class="count-note" id="count-note">Connect your wallet to see the live round clock from chain. V2 rounds run 1 hour each.</p>
+      <p class="count-note" id="count-note">Connect your wallet to see the live round clock from chain. V3 rounds run 1 hour each.</p>
     </section>
 
     <section aria-label="Fight arena">
@@ -195,7 +195,7 @@
         <button id="winner-demo-btn-3" type="button">▶ Breakout win video (demo)</button>
         <span class="fight-score" id="fight-score">Hits landed — <b>Momentum 0</b> · <b>Mean-reversion 0</b> · <b>Breakout 0</b> (visual only)</span>
       </div>
-      <p class="feed-note">Fight visual: the plush fighters take turns lunging, punching and shaking the arena — but the bars are the real backed $WIF per agent, read live from the V2 contract. Hits, impact bursts and hit counts are animation only — agents do not trade live yet, the owner settles the winner at the end of the hour.</p>
+      <p class="feed-note">Fight visual: the plush fighters take turns lunging, punching and shaking the arena — but the bars are the real backed $WIF per agent, read live from the V3 contract. Hits, impact bursts and hit counts are animation only. The round winner is computed by the contract itself from live $WIF pool prices — no person chooses it, not the owner, not anyone.</p>
 
       <div class="winner-video" id="winner-video">
         <h3 id="winner-video-title">🏆 Winner video</h3>
@@ -214,7 +214,10 @@
           </div>
           <button class="enter-btn" id="enter-btn" type="button" disabled>Connect wallet to enter</button>
           <button class="enter-btn" id="claim-btn" type="button" style="margin-top:10px">Claim prize — last settled round</button>
-          <p class="sec-note" style="margin-top:8px">Claim pays the last settled round's prize to the connected wallet. It works only after the owner settles that round, and only if you backed the winning agent. Prizes are never sent automatically — you claim them here.</p>
+          <button class="enter-btn" id="snapshot-btn" type="button" style="margin-top:10px">📸 Snapshot price — anyone can call</button>
+          <button class="enter-btn" id="settle-btn" type="button" style="margin-top:10px">⚖️ Settle round — anyone can call</button>
+          <p class="sec-note" style="margin-top:8px">Claim pays the last settled round's prize to the connected wallet. It works only after that round is settled, and only if you backed the winning agent. Prizes are never sent automatically — you claim them here. In V3 there is no owner: anyone can press Snapshot (records the live pool price, at most once per 5 minutes, max 16 price points per round) or Settle (after the hour ends — the contract computes the winner from the recorded prices, nobody chooses it). Snapshot and Settle cost a little gas, paid by whoever calls them.</p>
+          <p class="sec-note" id="scoreboard">Live scoreboard: connect your wallet to see the current round's snapshots and preview scores.</p>
           <div class="status" id="play-status"></div>
         </div>
         <div class="price"><span id="pick-amount">100</span> $WIF<small>your stake · 50 / 30 / 20 split</small></div>
@@ -232,15 +235,15 @@
       <h2>How it plays</h2>
       <p class="sec-note">You enter from this page, in your own wallet. This site never sees your private key — every move is a transaction you review and sign in Rabby or MetaMask.</p>
       <ol class="flow">
-        <li><b>01 / Enter</b>Approve exactly your stake to the V2 arena, then enter with your agent's number: 1, 2, or 3.</li>
-        <li><b>02 / Fight for an hour</b>The round runs 1 hour. Watch the bars move as backers pile in.</li>
-        <li><b>03 / Settle &amp; claim</b>Owner settles the winning agent, the burn and seed happen, winners claim their share.</li>
+        <li><b>01 / Enter</b>Approve exactly your stake to the V3 arena, then enter with your agent's number: 1, 2, or 3.</li>
+        <li><b>02 / Fight for an hour</b>The round runs 1 hour. Anyone can press Snapshot to record the live pool price (max once per 5 minutes). Watch the bars move as backers pile in.</li>
+        <li><b>03 / Settle &amp; claim</b>After the hour ends, anyone presses Settle — the contract computes the winner from the recorded pool prices, the burn and seed happen, winners claim their share. No person picks the winner.</li>
       </ol>
     </section>
 
     <footer>
-      <p>V2 arena contract 0x2da0A8B64843a2bdCeFC78C69F48f549C4fdE160 · source verified on Sourcify (Exact Match) · not audited · for the worldisflat.fun hackathon. V1 arena (daily rounds) is a separate contract and is untouched.</p>
-      <p><a href="https://robinhoodchain.blockscout.com/address/0x2da0A8B64843a2bdCeFC78C69F48f549C4fdE160">V2 on Blockscout</a> · <a href="https://repo.sourcify.dev/4663/0x2da0A8B64843a2bdCeFC78C69F48f549C4fdE160">V2 on Sourcify</a> · <a href="https://robinhoodchain.blockscout.com/tx/0xf7792596133c21a21a269c2565c21e6138947165984785f8718a1c6b40b87ce">V2 deploy</a></p>
+      <p>V3 arena contract 0x845d23dBD7290d7469C4f9f012f44277cbE7702E · source verified on Sourcify (Exact Match) · not audited · no owner, no privileged function — the winner is computed onchain from Uniswap V4 pool prices · for the worldisflat.fun hackathon. V2 (hourly, owner-settled) and V1 (daily rounds) are separate contracts and are untouched.</p>
+      <p><a href="https://robinhoodchain.blockscout.com/address/0x845d23dBD7290d7469C4f9f012f44277cbE7702E">V3 on Blockscout</a> · <a href="https://repo.sourcify.dev/4663/0x845d23dBD7290d7469C4f9f012f44277cbE7702E">V3 on Sourcify</a> · <a href="https://robinhoodchain.blockscout.com/tx/0xeaf09b380f4e8c72fb25ff0444a8971d06499b860b31eed92064799d5676a11a">V3 deploy</a></p>
     </footer>
   </div>
 <script>
@@ -409,7 +412,7 @@
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.0/dist/ethers.umd.min.js"></script>
 <script>
   // Real play, from this page. No key ever touches this page: the wallet signs.
-  const ARENA = '0x2da0A8B64843a2bdCeFC78C69F48f549C4fdE160';
+  const ARENA = '0x845d23dBD7290d7469C4f9f012f44277cbE7702E';
   const WIF = '0x5173b8eA6923c2d40267890D45C46a3480954773';
   const CHAIN_ID = 4663;
   const ARENA_ABI = [
@@ -418,7 +421,12 @@
     'function currentRoundId() external view returns (uint256)',
     'function agentTotal(uint256 roundId, uint256 agentId) external view returns (uint256)',
     'function backerAmount(uint256 roundId, address backer, uint256 agentId) external view returns (uint256)',
-    'function claim(uint256 roundId) external'
+    'function claim(uint256 roundId) external',
+    'function snapshot() external',
+    'function settle() external',
+    'function agentScore(uint256 roundId, uint256 agentId) external view returns (uint256)',
+    'function pricePoints(uint256 roundId) external view returns (uint160[])',
+    'function snapshotCount(uint256 roundId) external view returns (uint256)'
   ];
   const WIF_ABI = [
     'function approve(address spender, uint256 amount) external returns (bool)',
@@ -463,6 +471,33 @@
       renderTotals(totals, totalCollected);
       document.getElementById('count-note').textContent =
         'Round ' + roundId + ' onchain · ' + fmt(totalCollected) + ' $WIF collected · ' + info[6] + ' entries · ' + (info[2] ? 'settled' : 'not settled yet') + ' · rounds run 1 hour each';
+      // V3 scoreboard: unofficial preview mirroring the contract's _scores()
+      // exactly — sqrtPrice ratios, integer division, positions decided from
+      // history only (no lookahead). settle() computes the official scores.
+      try {
+        const prices = await arena.pricePoints(roundId);
+        const count = Number(await arena.snapshotCount(roundId));
+        const ONE = 10n ** 18n;
+        const caps = [ONE, ONE, ONE];
+        let maxSoFar = prices[0];
+        for (let i = 0; i + 1 < prices.length; i++) {
+          const momLong = i > 0 && prices[i] > prices[i - 1];
+          const meanLong = i > 0 && prices[i] < prices[i - 1];
+          const breakLong = i > 0 && prices[i] > maxSoFar;
+          if (prices[i] > maxSoFar) maxSoFar = prices[i];
+          const step = (prices[i + 1] * ONE) / prices[i];
+          const longs = [momLong, meanLong, breakLong];
+          for (let j = 0; j < 3; j++) if (longs[j]) caps[j] = (caps[j] * step) / ONE;
+        }
+        const sNames = ['Momentum', 'Mean-reversion', 'Breakout'];
+        const show = caps.map(c => (Number(c) / 1e18).toFixed(4) + 'x');
+        const tied = caps[0] === caps[1] && caps[1] === caps[2];
+        let leader = 0; for (let j = 1; j < 3; j++) if (caps[j] > caps[leader]) leader = j;
+        document.getElementById('scoreboard').textContent =
+          'Live scoreboard (unofficial preview — settle() computes the official scores): snapshots ' + count + ' / 16 · ' +
+          sNames.map((n, j) => n + ' ' + show[j]).join(' · ') + ' · ' + (tied ? 'all tied' : 'leading: ' + sNames[leader]) +
+          (info[2] ? ' · round settled, winner: ' + sNames[Number(info[3]) - 1] : '');
+      } catch (e) { /* scoreboard is a bonus — totals already rendered */ }
       // Winner video: only after the round is SETTLED onchain, and only the
       // video of the actual settled winning agent. Until then, nothing plays.
       const winnerNames = ['', 'Momentum', 'Mean-reversion', 'Breakout'];
@@ -477,7 +512,7 @@
         wvTitle.textContent = '🏆 Round ' + roundId + ' winner: ' + wName;
         if (winnerVideos[Number(info[3])]) {
           wvEl.src = winnerVideos[Number(info[3])]; wvEl.style.display = 'block';
-          wvNote.textContent = 'This is the official win video for this settled round — the winner was decided onchain by settle(), not by this video.';
+          wvNote.textContent = 'This is the official win video for this settled round — the winner was computed onchain by the contract from pool prices, not chosen by any person, and not by this video.';
         } else {
           wvEl.removeAttribute('src'); wvEl.style.display = 'none';
           wvNote.textContent = 'The ' + wName + ' win video has not been uploaded yet — it will appear here automatically once it is added.';
@@ -573,7 +608,7 @@
       if (current < 1) { setStatus('No finished round to claim yet.'); claimBtn.disabled = false; claimBtn.textContent = 'Claim prize — last settled round'; return; }
       const last = current - 1;
       const info = await arena.roundInfo(last);
-      if (!info[2]) { setStatus('Round ' + last + ' is not settled yet. The owner must settle it first, then you can claim.'); claimBtn.disabled = false; claimBtn.textContent = 'Claim prize — last settled round'; return; }
+      if (!info[2]) { setStatus('Round ' + last + ' is not settled yet. Nobody has settled it — anyone can press Settle (there is no owner in V3), then you can claim.'); claimBtn.disabled = false; claimBtn.textContent = 'Claim prize — last settled round'; return; }
       const winner = Number(info[3]);
       const myBacking = await arena.backerAmount(last, userAddress, winner);
       if (myBacking === 0n) { setStatus('You did not back the winning agent in round ' + last + ', so there is nothing to claim for that round.'); claimBtn.disabled = false; claimBtn.textContent = 'Claim prize — last settled round'; return; }
@@ -591,6 +626,47 @@
       else setStatus('Claim failed: ' + msg + ' Make sure the round is settled, you backed the winner, and you have not claimed this round already.');
     }
     claimBtn.disabled = false; claimBtn.textContent = 'Claim prize — last settled round';
+  });
+  const snapshotBtn = document.getElementById('snapshot-btn');
+  snapshotBtn.addEventListener('click', async () => {
+    if (!signer) { setStatus('Connect your wallet first, then snapshot.'); return; }
+    try {
+      snapshotBtn.disabled = true; snapshotBtn.textContent = 'Snapshotting…';
+      const arena = new ethers.Contract(ARENA, ARENA_ABI, signer);
+      const tx = await arena.snapshot();
+      setStatus('Snapshot sent: <a href="' + EXPLORER + tx.hash + '" target="_blank" rel="noopener">view on Blockscout</a> — waiting for confirmation…');
+      await tx.wait();
+      setStatus('Snapshot recorded! The contract read the live pool price itself — no price was supplied by anyone. Tx: <a href="' + EXPLORER + tx.hash + '" target="_blank" rel="noopener">view on Blockscout</a>');
+      await refreshChain();
+    } catch (e) {
+      const msg = (e && e.message) ? e.message : String(e);
+      if (msg.includes('user rejected') || msg.includes('User denied')) setStatus('You rejected the snapshot in your wallet. Nothing moved.');
+      else if (msg.includes('too soon')) setStatus('Snapshot too soon — snapshots are at most once per 5 minutes. Wait a bit and try again.');
+      else if (msg.includes('max snapshots')) setStatus('This round already has the maximum 16 price points — no more snapshots needed.');
+      else if (msg.includes('round closed')) setStatus('This round already ended — snapshot the next round instead, or press Settle.');
+      else setStatus('Snapshot failed: ' + msg);
+    }
+    snapshotBtn.disabled = false; snapshotBtn.textContent = '📸 Snapshot price — anyone can call';
+  });
+  const settleBtn = document.getElementById('settle-btn');
+  settleBtn.addEventListener('click', async () => {
+    if (!signer) { setStatus('Connect your wallet first, then settle.'); return; }
+    try {
+      settleBtn.disabled = true; settleBtn.textContent = 'Settling…';
+      const arena = new ethers.Contract(ARENA, ARENA_ABI, signer);
+      const tx = await arena.settle();
+      setStatus('Settle sent: <a href="' + EXPLORER + tx.hash + '" target="_blank" rel="noopener">view on Blockscout</a> — waiting for confirmation…');
+      await tx.wait();
+      setStatus('Settled! The contract computed the winner from the recorded pool prices — nobody chose it. Winners can now claim. Tx: <a href="' + EXPLORER + tx.hash + '" target="_blank" rel="noopener">view on Blockscout</a>');
+      await refreshChain();
+    } catch (e) {
+      const msg = (e && e.message) ? e.message : String(e);
+      if (msg.includes('user rejected') || msg.includes('User denied')) setStatus('You rejected the settle in your wallet. Nothing moved.');
+      else if (msg.includes('round not over')) setStatus('The round is not over yet — settle only works after the hour ends.');
+      else if (msg.includes('already settled')) setStatus('This round is already settled — the next round is live.');
+      else setStatus('Settle failed: ' + msg);
+    }
+    settleBtn.disabled = false; settleBtn.textContent = '⚖️ Settle round — anyone can call';
   });
 </script>
 </body>
