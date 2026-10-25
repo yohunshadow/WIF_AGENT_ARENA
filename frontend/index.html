@@ -144,6 +144,7 @@
         <div class="pill">Hourly · <b>Live</b> · Robinhood Chain</div>
         <span class="balance-pill" id="balance-pill"><small>balance ·</small> <b id="balance-val">—</b> $WIF</span>
         <button class="connect" id="connect-btn" type="button">Connect wallet</button>
+        <button class="connect" id="disconnect-btn" type="button" style="display:none">Disconnect</button>
       </div>
     </nav>
 
@@ -547,6 +548,7 @@
       signer = await provider.getSigner();
       userAddress = await signer.getAddress();
       connectBtn.textContent = 'Connected: ' + short(userAddress);
+      document.getElementById('disconnect-btn').style.display = '';
       const wif = new ethers.Contract(WIF, WIF_ABI, provider);
       const bal = await wif.balanceOf(userAddress);
       const balWif = Number(ethers.formatUnits(bal, 18));
@@ -560,6 +562,19 @@
       connectBtn.disabled = false; connectBtn.textContent = 'Connect wallet';
       setStatus('Could not connect: ' + (e && e.message ? e.message : e) + ' Check that your wallet is on Robinhood Chain (4663).');
     }
+  });
+  const disconnectBtn = document.getElementById('disconnect-btn');
+  disconnectBtn.addEventListener('click', () => {
+    // Page-side disconnect: forgets this site's session (provider, signer,
+    // address, balance, enter state). The wallet extension itself stays
+    // installed — to fully revoke the site there, disconnect it in Rabby /
+    // MetaMask under connected sites as well.
+    provider = undefined; signer = undefined; userAddress = undefined;
+    connectBtn.disabled = false; connectBtn.textContent = 'Connect wallet';
+    disconnectBtn.style.display = 'none';
+    balancePill.classList.remove('show'); balanceVal.textContent = '—';
+    enterBtn.disabled = true; enterBtn.textContent = 'Connect wallet to enter';
+    setStatus('Disconnected from this site. Reconnect anytime — nothing was sent, nothing moved.');
   });
   enterBtn.addEventListener('click', async () => {
     if (!signer) return;
