@@ -213,6 +213,8 @@
             <span>$WIF · min 100, max 100,000 per enter</span>
           </div>
           <button class="enter-btn" id="enter-btn" type="button" disabled>Connect wallet to enter</button>
+          <button class="enter-btn" id="claim-btn" type="button" style="margin-top:10px">Claim prize — last settled round</button>
+          <p class="sec-note" style="margin-top:8px">Claim pays the last settled round's prize to the connected wallet. It works only after the owner settles that round, and only if you backed the winning agent. Prizes are never sent automatically — you claim them here.</p>
           <div class="status" id="play-status"></div>
         </div>
         <div class="price"><span id="pick-amount">100</span> $WIF<small>your stake · 50 / 30 / 20 split</small></div>
@@ -414,7 +416,9 @@
     'function enter(uint256 agentId, uint256 amount) external',
     'function roundInfo(uint256 roundId) external view returns (uint256 startTime, uint256 endTime, bool settled, uint256 winningAgent, uint256 prizePool, uint256 totalCollected, uint256 totalBackings)',
     'function currentRoundId() external view returns (uint256)',
-    'function agentTotal(uint256 roundId, uint256 agentId) external view returns (uint256)'
+    'function agentTotal(uint256 roundId, uint256 agentId) external view returns (uint256)',
+    'function backerAmount(uint256 roundId, address backer, uint256 agentId) external view returns (uint256)',
+    'function claim(uint256 roundId) external'
   ];
   const WIF_ABI = [
     'function approve(address spender, uint256 amount) external returns (bool)',
@@ -558,6 +562,35 @@
       if (msg.includes('user rejected') || msg.includes('User denied')) setStatus('You rejected the transaction in your wallet. Nothing moved. Try again when ready.');
       else setStatus('Enter failed: ' + msg + ' Check your $WIF balance and that the round is still open.');
     }
+  });
+  const claimBtn = document.getElementById('claim-btn');
+  claimBtn.addEventListener('click', async () => {
+    if (!signer) { setStatus('Connect your wallet first, then claim.'); return; }
+    try {
+      claimBtn.disabled = true; claimBtn.textContent = 'Checking…';
+      const arena = new ethers.Contract(ARENA, ARENA_ABI, signer);
+      const current = Number(await arena.currentRoundId());
+      if (current < 1) { setStatus('No finished round to claim yet.'); claimBtn.disabled = false; claimBtn.textContent = 'Claim prize — last settled round'; return; }
+      const last = current - 1;
+      const info = await arena.roundInfo(last);
+      if (!info[2]) { setStatus('Round ' + last + ' is not settled yet. The owner must settle it first, then you can claim.'); claimBtn.disabled = false; claimBtn.textContent = 'Claim prize — last settled round'; return; }
+      const winner = Number(info[3]);
+      const myBacking = await arena.backerAmount(last, userAddress, winner);
+      if (myBacking === 0n) { setStatus('You did not back the winning agent in round ' + last + ', so there is nothing to claim for that round.'); claimBtn.disabled = false; claimBtn.textContent = 'Claim prize — last settled round'; return; }
+      setStatus('Claiming your round ' + last + ' prize (' + fmt(Number(ethers.formatUnits(myBacking, 18))) + ' $WIF backed on the winner)…');
+      const tx = await arena.claim(last);
+      setStatus('Claim sent: <a href="' + EXPLORER + tx.hash + '" target="_blank" rel="noopener">view on Blockscout</a> — waiting for confirmation…');
+      await tx.wait();
+      setStatus('Claimed! Round ' + last + ' prize sent to your wallet. Tx: <a href="' + EXPLORER + tx.hash + '" target="_blank" rel="noopener">view on Blockscout</a>');
+      await refreshChain();
+      const bal = await new ethers.Contract(WIF, WIF_ABI, provider).balanceOf(userAddress);
+      balanceVal.textContent = fmt(Number(ethers.formatUnits(bal, 18)));
+    } catch (e) {
+      const msg = (e && e.message) ? e.message : String(e);
+      if (msg.includes('user rejected') || msg.includes('User denied')) setStatus('You rejected the claim in your wallet. Nothing moved.');
+      else setStatus('Claim failed: ' + msg + ' Make sure the round is settled, you backed the winner, and you have not claimed this round already.');
+    }
+    claimBtn.disabled = false; claimBtn.textContent = 'Claim prize — last settled round';
   });
 </script>
 </body>
