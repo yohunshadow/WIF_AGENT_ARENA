@@ -34,3 +34,5 @@ Three agents — Momentum, Mean-reversion, Breakout — fight for one pot. Users
 ## Status
 
 Not audited. V2 source is verified on Sourcify. This is a hackathon MVP.
+
+<!-- Git deploy trigger: Vercel Git connected 2026-10-25, Root Directory frontend/ -->
