@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>WIF Agent Arena — Pick an agent. Take the pot.</title>
 <meta name="description" content="An hourly $WIF showdown on Robinhood Chain. Three agents, one pot, 100 to 100,000 $WIF to back your pick.">
+<link rel="icon" href="data:,">
+<meta property="og:type" content="website">
+<meta property="og:title" content="WIF Agent Arena — Pick an agent. Take the pot.">
+<meta property="og:description" content="Hourly $WIF rounds on Robinhood Chain. Back one of three agents; the V3 contract computes the winner from onchain pool prices. 50% prize, 30% burn, 20% next round.">
+<meta property="og:url" content="https://wif-agent-arena.vercel.app/">
+<meta property="og:image" content="https://wif-agent-arena.vercel.app/assets/media-generation-agent-breakout-plush-0-c74d13bf-5bee-4563-9c4d-22b95c21e421.webp">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="WIF Agent Arena — Pick an agent. Take the pot.">
+<meta name="twitter:description" content="Hourly $WIF rounds on Robinhood Chain. Back one of three agents; the V3 contract computes the winner from onchain pool prices.">
+<meta name="twitter:image" content="https://wif-agent-arena.vercel.app/assets/media-generation-agent-breakout-plush-0-c74d13bf-5bee-4563-9c4d-22b95c21e421.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -97,6 +107,12 @@
   @media (max-width:820px){ ol.flow{grid-template-columns:1fr} }
   ol.flow li{background:var(--panel); border:1.5px solid var(--line); border-radius:20px; padding:20px}
   ol.flow b{display:block; font-family:"JetBrains Mono",monospace; color:var(--lime); margin-bottom:8px}
+  .history-wrap{overflow-x:auto; background:var(--panel); border:1.5px solid var(--line); border-radius:20px; padding:8px 12px}
+  table.history{width:100%; border-collapse:collapse; font-size:0.9rem}
+  table.history th{color:var(--muted); font-weight:500; text-align:left; padding:10px 8px; border-bottom:1.5px solid var(--line)}
+  table.history td{padding:10px 8px; border-bottom:1px solid var(--line)}
+  table.history tr:last-child td{border-bottom:0}
+  table.history a{color:var(--lime)}
   footer{margin-top:56px; padding-top:20px; border-top:1.5px solid var(--line); color:var(--muted); font-size:0.85rem}
   footer a{color:var(--muted)}
 
@@ -136,12 +152,12 @@
 </style>
 </head>
 <body>
-  <div class="ticker" aria-hidden="true"><span>HOURLY FIGHTS ARE LIVE ✦ 100 – 100,000 $WIF TO ENTER ✦ 50% PRIZE ✦ 30% BURN ✦ 20% NEXT ROUND ✦ ROBINHOOD CHAIN ✦ HOURLY FIGHTS ARE LIVE ✦ 100 – 100,000 $WIF TO ENTER ✦ 50% PRIZE ✦ 30% BURN ✦ 20% NEXT ROUND ✦ ROBINHOOD CHAIN ✦&nbsp;</span></div>
+  <div class="ticker" aria-hidden="true"><span id="ticker-text">HOURLY ROUNDS ✦ 100 – 100,000 $WIF TO ENTER ✦ 50% PRIZE ✦ 30% BURN ✦ 20% NEXT ROUND ✦ ROBINHOOD CHAIN ✦ HOURLY ROUNDS ✦ 100 – 100,000 $WIF TO ENTER ✦ 50% PRIZE ✦ 30% BURN ✦ 20% NEXT ROUND ✦ ROBINHOOD CHAIN ✦&nbsp;</span></div>
   <div class="wrap">
     <nav>
       <div class="logo">WIF<i>ARENA</i></div>
       <div class="nav-right">
-        <div class="pill">Hourly · <b>Live</b> · Robinhood Chain</div>
+        <div class="pill" id="round-pill">Hourly · Robinhood Chain</div>
         <span class="balance-pill" id="balance-pill"><small>balance ·</small> <b id="balance-val">—</b> $WIF</span>
         <button class="connect" id="connect-btn" type="button">Connect wallet</button>
         <button class="connect" id="disconnect-btn" type="button" style="display:none">Disconnect</button>
@@ -156,7 +172,7 @@
         <div><b id="cd-m">--</b><span>minutes</span></div>
         <div><b id="cd-s">--</b><span>seconds</span></div>
       </div>
-      <p class="count-note" id="count-note">Connect your wallet to see the live round clock from chain. V3 rounds run 1 hour each.</p>
+      <p class="count-note" id="count-note">Loading the live round from Robinhood Chain… V3 rounds run 1 hour each.</p>
     </section>
 
     <section aria-label="Fight arena">
@@ -214,11 +230,11 @@
             <span>$WIF · min 100, max 100,000 per enter</span>
           </div>
           <button class="enter-btn" id="enter-btn" type="button" disabled>Connect wallet to enter</button>
-          <button class="enter-btn" id="claim-btn" type="button" style="margin-top:10px">Claim prize — last settled round</button>
+          <button class="enter-btn" id="claim-btn" type="button" style="margin-top:10px">Claim prize — connect wallet</button>
           <button class="enter-btn" id="snapshot-btn" type="button" style="margin-top:10px">📸 Snapshot price — anyone can call</button>
-          <button class="enter-btn" id="settle-btn" type="button" style="margin-top:10px">⚖️ Settle round — anyone can call</button>
-          <p class="sec-note" style="margin-top:8px">Claim pays the last settled round's prize to the connected wallet. It works only after that round is settled, and only if you backed the winning agent. Prizes are never sent automatically — you claim them here. In V3 there is no owner: anyone can press Snapshot (records the live pool price, at most once per 5 minutes, max 16 price points per round) or Settle (after the hour ends — the contract computes the winner from the recorded prices, nobody chooses it). Snapshot and Settle cost a little gas, paid by whoever calls them.</p>
-          <p class="sec-note" id="scoreboard">Live scoreboard: connect your wallet to see the current round's snapshots and preview scores.</p>
+          <button class="enter-btn" id="settle-btn" type="button" style="margin-top:10px;display:none">⚖️ Settle &amp; start next round — anyone can call</button>
+          <p class="sec-note" style="margin-top:8px">Claim finds every settled V3 round where the connected wallet backed the winning agent and has not claimed yet, and claims them one by one. Prizes are never sent automatically — you claim them here. In V3 there is no owner: anyone can press Snapshot (records the live pool price, at most once per 5 minutes, max 16 price points per round) or Settle (after the hour ends — the contract computes the winner from the recorded prices, nobody chooses it). Snapshot and Settle cost a little gas, paid by whoever calls them.</p>
+          <p class="sec-note" id="scoreboard">Live scoreboard: loading the current round's price points from chain…</p>
           <div class="status" id="play-status"></div>
         </div>
         <div class="price"><span id="pick-amount">100</span> $WIF<small>your stake · 50 / 30 / 20 split</small></div>
@@ -230,6 +246,15 @@
         <div><b id="split-next">— $WIF</b><span>Seeded into the next round — the pot never starts from zero</span></div>
       </div>
       <p class="sec-note" style="margin-top:12px">Split is 50 / 30 / 20 of whatever is collected this round. More backing = a bigger pot, same split.</p>
+    </section>
+
+    <section aria-label="Round history">
+      <h2>Round history</h2>
+      <p class="sec-note" id="history-note">Every settled V3 round, read live from the contract's onchain events — real transactions only, no demo data. "Tie-break" means all three agents scored the same and the contract's fixed hash rule picked the winner (see SECURITY.md in the repo).</p>
+      <div class="history-wrap"><table class="history">
+        <thead><tr><th>Round</th><th>Winner</th><th>Entries</th><th>Prize pool</th><th>Burned</th><th>Settle tx</th><th>Claims</th></tr></thead>
+        <tbody id="history-body"><tr><td colspan="7">Loading onchain history…</td></tr></tbody>
+      </table></div>
     </section>
 
     <section>
@@ -410,16 +435,23 @@
   }
   setInterval(tick, 1000);
 </script>
-<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.0/dist/ethers.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.0/dist/ethers.umd.min.js" integrity="sha384-JjzOKxQsr+Jhx75Ot1XldVFnWF2UCtB4Ig2JuEcuBt4VAdUG6alucV+sHrYjPn5C" crossorigin="anonymous"></script>
 <script>
   // Real play, from this page. No key ever touches this page: the wallet signs.
+  // Reads (round state, bars, clock, scoreboard, history) use a public
+  // read-only RPC, so everything shows without a wallet. Writes use the wallet.
   const ARENA = '0x845d23dBD7290d7469C4f9f012f44277cbE7702E';
   const WIF = '0x5173b8eA6923c2d40267890D45C46a3480954773';
   const CHAIN_ID = 4663;
+  const RPC_URL = 'https://rpc.mainnet.chain.robinhood.com';
+  const V3_DEPLOY_BLOCK = 97615645;
+  const SNAPSHOT_MIN_INTERVAL = 300;
+  const MAX_PRICE_POINTS = 16;
   const ARENA_ABI = [
     'function enter(uint256 agentId, uint256 amount) external',
     'function roundInfo(uint256 roundId) external view returns (uint256 startTime, uint256 endTime, bool settled, uint256 winningAgent, uint256 prizePool, uint256 totalCollected, uint256 totalBackings)',
     'function currentRoundId() external view returns (uint256)',
+    'function nextRoundPool() external view returns (uint256)',
     'function agentTotal(uint256 roundId, uint256 agentId) external view returns (uint256)',
     'function backerAmount(uint256 roundId, address backer, uint256 agentId) external view returns (uint256)',
     'function claim(uint256 roundId) external',
@@ -427,7 +459,12 @@
     'function settle() external',
     'function agentScore(uint256 roundId, uint256 agentId) external view returns (uint256)',
     'function pricePoints(uint256 roundId) external view returns (uint160[])',
-    'function snapshotCount(uint256 roundId) external view returns (uint256)'
+    'function snapshotCount(uint256 roundId) external view returns (uint256)',
+    'event RoundStarted(uint256 indexed roundId, uint256 endTime, uint160 startPrice)',
+    'event PriceSnapshot(uint256 indexed roundId, uint160 sqrtPriceX96, uint256 timestamp)',
+    'event Entered(uint256 indexed roundId, address indexed backer, uint256 indexed agentId, uint256 amount)',
+    'event RoundSettled(uint256 indexed roundId, uint256 winningAgent, uint256 prizePool, uint256 burned, uint256 nextPool, uint256[] scores)',
+    'event Claimed(uint256 indexed roundId, address indexed backer, uint256 amount)'
   ];
   const WIF_ABI = [
     'function approve(address spender, uint256 amount) external returns (bool)',
@@ -435,27 +472,40 @@
     'function balanceOf(address account) external view returns (uint256)'
   ];
   const EXPLORER = 'https://robinhoodchain.blockscout.com/tx/';
+  const AGENT_NAMES = ['', 'Momentum', 'Mean-reversion', 'Breakout'];
   const statusEl = document.getElementById('play-status');
   const connectBtn = document.getElementById('connect-btn');
   const enterBtn = document.getElementById('enter-btn');
+  const claimBtn = document.getElementById('claim-btn');
+  const snapshotBtn = document.getElementById('snapshot-btn');
+  const settleBtn = document.getElementById('settle-btn');
   const balancePill = document.getElementById('balance-pill');
   const balanceVal = document.getElementById('balance-val');
+  const readProvider = new ethers.JsonRpcProvider(RPC_URL, CHAIN_ID, { staticNetwork: true });
+  const arenaRead = new ethers.Contract(ARENA, ARENA_ABI, readProvider);
+  const iface = arenaRead.interface;
   let provider, signer, userAddress;
+  let busy = false;           // a wallet action is in flight
+  let state = null;           // last chain read: { roundId, start, end, settled, lastSnap, points, ... }
+  let logsCache = [];         // all V3 logs, parsed
+  let logsToBlock = V3_DEPLOY_BLOCK - 1;
+  let claimable = [];         // [{ roundId, amount }]
   function setStatus(html){ statusEl.innerHTML = html; }
-  // Single disconnect routine, used by the Disconnect button AND by wallet
-  // events below. Before this fix, disconnecting the site inside Rabby left
-  // this page still showing "Connected" + balance, because the page never
-  // listened for the wallet's disconnect signal.
+  function short(addr){ return addr.slice(0,6) + '…' + addr.slice(-4); }
+  function fmt(n){ return Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+  function wifNum(raw){ return Number(ethers.formatUnits(raw, 18)); }
+  function txLink(h, label){ return '<a href="' + EXPLORER + h + '" target="_blank" rel="noopener">' + (label || (h.slice(0,10) + '…')) + '</a>'; }
+  function mmss(sec){ sec = Math.max(0, Math.ceil(sec)); return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); }
+  function chainNow(){ return Math.floor(Date.now() / 1000); }
+
   function doDisconnect(msg){
-    provider = undefined; signer = undefined; userAddress = undefined;
+    provider = undefined; signer = undefined; userAddress = undefined; claimable = [];
     connectBtn.disabled = false; connectBtn.textContent = 'Connect wallet';
     document.getElementById('disconnect-btn').style.display = 'none';
     balancePill.classList.remove('show'); balanceVal.textContent = '—';
-    enterBtn.disabled = true; enterBtn.textContent = 'Connect wallet to enter';
     setStatus(msg || 'Disconnected from this site. Reconnect anytime — nothing was sent, nothing moved.');
+    updateButtons();
   }
-  function short(addr){ return addr.slice(0,6) + '…' + addr.slice(-4); }
-  function fmt(n){ return Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
   function renderTotals(totals, totalCollected){
     const names = ['Momentum','Mean-reversion','Breakout'];
     names.forEach((name, i) => {
@@ -471,25 +521,136 @@
     document.getElementById('split-burn').textContent = fmt(totalCollected * 0.3) + ' $WIF';
     document.getElementById('split-next').textContent = fmt(totalCollected * 0.2) + ' $WIF';
   }
+
+  // ---- Onchain logs (incremental) -> round history, last snapshot time, claims
+  async function syncLogs(){
+    const latest = await readProvider.getBlockNumber();
+    let from = logsToBlock + 1, step = 2000000;
+    while (from <= latest) {
+      const to = Math.min(from + step - 1, latest);
+      try {
+        const raw = await readProvider.getLogs({ address: ARENA, fromBlock: from, toBlock: to });
+        for (const l of raw) {
+          try { const p = iface.parseLog(l); if (p) logsCache.push({ name: p.name, args: p.args, tx: l.transactionHash, block: l.blockNumber }); } catch (e) {}
+        }
+        logsToBlock = to; from = to + 1;
+      } catch (e) {
+        if (step <= 50000) throw e;
+        step = Math.floor(step / 4);
+      }
+    }
+  }
+  function renderHistory(){
+    const body = document.getElementById('history-body');
+    const settled = logsCache.filter(l => l.name === 'RoundSettled').sort((a, b) => Number(b.args.roundId) - Number(a.args.roundId));
+    if (!settled.length) { body.innerHTML = '<tr><td colspan="7">No settled V3 rounds yet.</td></tr>'; return; }
+    body.innerHTML = settled.map(l => {
+      const rid = Number(l.args.roundId);
+      const entries = logsCache.filter(e => e.name === 'Entered' && Number(e.args.roundId) === rid);
+      const collected = entries.reduce((s, e) => s + wifNum(e.args.amount), 0);
+      const winner = Number(l.args.winningAgent);
+      const backedWinner = entries.some(e => Number(e.args.agentId) === winner);
+      const sc = l.args.scores.map(x => x.toString());
+      const tie = sc.every(x => x === sc[0]);
+      const claims = logsCache.filter(c => c.name === 'Claimed' && Number(c.args.roundId) === rid);
+      const prizeNote = wifNum(l.args.prizePool) > 0 && !backedWinner ? ' (unclaimable — nobody backed the winner)' : '';
+      return '<tr><td>' + rid + '</td><td>' + (AGENT_NAMES[winner] || winner) + (tie ? ' <small>(tie-break)</small>' : '') + '</td>' +
+        '<td>' + entries.length + ' · ' + fmt(collected) + ' $WIF</td>' +
+        '<td>' + fmt(wifNum(l.args.prizePool)) + ' $WIF' + prizeNote + '</td>' +
+        '<td>' + fmt(wifNum(l.args.burned)) + ' $WIF</td>' +
+        '<td>' + txLink(l.tx, 'settle') + '</td>' +
+        '<td>' + (claims.length ? claims.map(c => txLink(c.tx, 'claim')).join(' ') : '—') + '</td></tr>';
+    }).join('');
+  }
+  async function computeClaimable(){
+    claimable = [];
+    if (!userAddress) return;
+    const me = userAddress.toLowerCase();
+    const rounds = [...new Set(logsCache.filter(l => l.name === 'Entered' && l.args.backer.toLowerCase() === me).map(l => Number(l.args.roundId)))];
+    const claimed = new Set(logsCache.filter(l => l.name === 'Claimed' && l.args.backer.toLowerCase() === me).map(l => Number(l.args.roundId)));
+    for (const rid of rounds) {
+      if (claimed.has(rid)) continue;
+      const s = logsCache.find(l => l.name === 'RoundSettled' && Number(l.args.roundId) === rid);
+      if (!s) continue;
+      const winner = Number(s.args.winningAgent);
+      const mine = await arenaRead.backerAmount(rid, userAddress, winner);
+      if (mine === 0n) continue;
+      const total = await arenaRead.agentTotal(rid, winner);
+      claimable.push({ roundId: rid, amount: (s.args.prizePool * mine) / total });
+    }
+    claimable.sort((a, b) => a.roundId - b.roundId);
+  }
+
+  function setTicker(text){
+    const t = document.getElementById('ticker-text');
+    const unit = text + ' ✦ 100 – 100,000 $WIF TO ENTER ✦ 50% PRIZE ✦ 30% BURN ✦ 20% NEXT ROUND ✦ ROBINHOOD CHAIN ✦ ';
+    if (t.dataset.unit !== unit) { t.dataset.unit = unit; t.innerHTML = (unit + unit).replace(/ $/, '&nbsp;'); }
+  }
+  function updateButtons(){
+    if (!state) return;
+    const now = chainNow();
+    const ended = now >= state.end;
+    const needsSettle = ended && !state.settled;
+    // Enter
+    if (needsSettle) { enterBtn.disabled = true; enterBtn.textContent = 'Round ended — settle to start the next round'; }
+    else if (!signer) { enterBtn.disabled = true; enterBtn.textContent = 'Connect wallet to enter'; }
+    else if (!busy) { enterBtn.disabled = false; if (!/✓/.test(enterBtn.textContent)) enterBtn.textContent = 'Enter'; }
+    // Settle
+    settleBtn.style.display = needsSettle ? '' : 'none';
+    if (!busy) { settleBtn.disabled = false; settleBtn.textContent = '⚖️ Settle & start next round — anyone can call'; }
+    // Snapshot
+    if (!busy) {
+      const nextAt = state.lastSnap + SNAPSHOT_MIN_INTERVAL;
+      if (ended) { snapshotBtn.disabled = true; snapshotBtn.textContent = '📸 Snapshot — round closed'; }
+      else if (state.points >= MAX_PRICE_POINTS) { snapshotBtn.disabled = true; snapshotBtn.textContent = '📸 Snapshot — max 16 price points reached'; }
+      else if (nextAt >= state.end) { snapshotBtn.disabled = true; snapshotBtn.textContent = '📸 Snapshot — no more allowed this round'; }
+      else if (now < nextAt) { snapshotBtn.disabled = true; snapshotBtn.textContent = '📸 Snapshot — next allowed in ' + mmss(nextAt - now); }
+      else { snapshotBtn.disabled = false; snapshotBtn.textContent = '📸 Snapshot price — anyone can call'; }
+    }
+    // Claim
+    if (!busy) {
+      if (!signer) { claimBtn.disabled = false; claimBtn.textContent = 'Claim prize — connect wallet'; }
+      else if (claimable.length) { claimBtn.disabled = false; claimBtn.textContent = 'Claim prize — round ' + claimable[0].roundId + ' (' + fmt(wifNum(claimable[0].amount)) + ' $WIF)' + (claimable.length > 1 ? ' · ' + claimable.length + ' rounds claimable' : ''); }
+      else { claimBtn.disabled = true; claimBtn.textContent = 'Claim prize — nothing to claim'; }
+    }
+    const pill = document.getElementById('round-pill');
+    const note = document.getElementById('count-note');
+    if (needsSettle) {
+      setTicker('ROUND ' + state.roundId + ' ENDED — SETTLE TO START THE NEXT ROUND');
+      pill.innerHTML = 'Round ' + state.roundId + ' · <b>Ended</b> · Robinhood Chain';
+      note.textContent = 'Round ' + state.roundId + ' ended — settle to start the next round. Anyone can press Settle; the contract computes the winner. ' + state.summary;
+    } else {
+      setTicker('ROUND ' + state.roundId + ' IS LIVE');
+      pill.innerHTML = 'Round ' + state.roundId + ' · <b>Live</b> · Robinhood Chain';
+      note.textContent = 'Round ' + state.roundId + ' onchain · ' + state.summary + ' · rounds run 1 hour each';
+    }
+  }
+
   async function refreshChain(){
-    if (!provider) return;
     try {
-      const arena = new ethers.Contract(ARENA, ARENA_ABI, provider);
+      const arena = arenaRead;
       const roundId = await arena.currentRoundId();
       const info = await arena.roundInfo(roundId);
       roundEndMs = Number(info[1]) * 1000; tick();
       const totals = [];
-      for (let id = 1; id <= 3; id++){ totals.push(Number(ethers.formatUnits(await arena.agentTotal(roundId, id), 18))); }
-      const totalCollected = Number(ethers.formatUnits(info[5], 18));
+      for (let id = 1; id <= 3; id++){ totals.push(wifNum(await arena.agentTotal(roundId, id))); }
+      const totalCollected = wifNum(info[5]);
       renderTotals(totals, totalCollected);
-      document.getElementById('count-note').textContent =
-        'Round ' + roundId + ' onchain · ' + fmt(totalCollected) + ' $WIF collected · ' + info[6] + ' entries · ' + (info[2] ? 'settled' : 'not settled yet') + ' · rounds run 1 hour each';
+      const carried = wifNum(await arena.nextRoundPool());
+      const prices = await arena.pricePoints(roundId);
+      try { await syncLogs(); renderHistory(); } catch (e) { document.getElementById('history-note').textContent = 'Round history could not be loaded from the RPC right now — it retries automatically.'; }
+      // last snapshot time: latest PriceSnapshot event of this round, else round start
+      const snaps = logsCache.filter(l => l.name === 'PriceSnapshot' && l.args.roundId === roundId);
+      const lastSnap = snaps.length ? Number(snaps[snaps.length - 1].args.timestamp) : Number(info[0]);
+      state = { roundId: Number(roundId), start: Number(info[0]), end: Number(info[1]), settled: info[2], lastSnap, points: prices.length,
+        summary: fmt(totalCollected) + ' $WIF collected · ' + info[6] + ' entries · ' + fmt(carried) + ' $WIF carried in from the last round · ' + (info[2] ? 'settled' : 'not settled yet') };
+      if (userAddress) { try { await computeClaimable(); } catch (e) {} }
+      updateButtons();
       // V3 scoreboard: unofficial preview mirroring the contract's _scores()
       // exactly — sqrtPrice ratios, integer division, positions decided from
       // history only (no lookahead). settle() computes the official scores.
       try {
-        const prices = await arena.pricePoints(roundId);
-        const count = Number(await arena.snapshotCount(roundId));
+        const count = prices.length;
         const ONE = 10n ** 18n;
         const caps = [ONE, ONE, ONE];
         let maxSoFar = prices[0];
@@ -507,20 +668,19 @@
         const tied = caps[0] === caps[1] && caps[1] === caps[2];
         let leader = 0; for (let j = 1; j < 3; j++) if (caps[j] > caps[leader]) leader = j;
         document.getElementById('scoreboard').textContent =
-          'Live scoreboard (unofficial preview — settle() computes the official scores): snapshots ' + count + ' / 16 · ' +
-          sNames.map((n, j) => n + ' ' + show[j]).join(' · ') + ' · ' + (tied ? 'all tied' : 'leading: ' + sNames[leader]) +
+          'Live scoreboard (unofficial preview — settle() computes the official scores): price points ' + count + ' / 16 · ' +
+          sNames.map((n, j) => n + ' ' + show[j]).join(' · ') + ' · ' + (tied ? 'all tied (a tie is broken by a fixed onchain hash — see SECURITY.md)' : 'leading: ' + sNames[leader]) +
           (info[2] ? ' · round settled, winner: ' + sNames[Number(info[3]) - 1] : '');
       } catch (e) { /* scoreboard is a bonus — totals already rendered */ }
       // Winner video: only after the round is SETTLED onchain, and only the
       // video of the actual settled winning agent. Until then, nothing plays.
-      const winnerNames = ['', 'Momentum', 'Mean-reversion', 'Breakout'];
       const winnerVideos = { 1: 'assets/fight-momentum-wins.mp4', 2: 'assets/fight-mean-reversion-wins.mp4', 3: 'assets/fight-breakout-wins.mp4' };
       const wv = document.getElementById('winner-video');
       const wvEl = document.getElementById('winner-video-el');
       const wvTitle = document.getElementById('winner-video-title');
       const wvNote = document.getElementById('winner-video-note');
       if (info[2] && info[3] >= 1 && info[3] <= 3) {
-        const wName = winnerNames[Number(info[3])];
+        const wName = AGENT_NAMES[Number(info[3])];
         wv.classList.add('show');
         wvTitle.textContent = '🏆 Round ' + roundId + ' winner: ' + wName;
         if (winnerVideos[Number(info[3])]) {
@@ -533,8 +693,14 @@
       } else {
         wv.classList.remove('show');
       }
-    } catch (e) { /* keep the last render if a read fails */ }
+    } catch (e) {
+      if (!state) document.getElementById('count-note').textContent = 'Could not read the live round from Robinhood Chain right now — retrying automatically.';
+    }
   }
+  refreshChain();
+  setInterval(refreshChain, 20000);
+  setInterval(updateButtons, 1000);
+
   async function ensureChain(){
     const chainHex = '0x' + CHAIN_ID.toString(16);
     try {
@@ -543,12 +709,18 @@
       if (e && e.code === 4902) {
         await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{
           chainId: chainHex, chainName: 'Robinhood Chain',
-          rpcUrls: ['https://rpc.mainnet.chain.robinhood.com'],
+          rpcUrls: [RPC_URL],
           nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
           blockExplorerUrls: ['https://robinhoodchain.blockscout.com']
         }]});
       } else { throw e; }
     }
+  }
+  async function refreshBalance(){
+    if (!userAddress) return;
+    const bal = await new ethers.Contract(WIF, WIF_ABI, readProvider).balanceOf(userAddress);
+    balanceVal.textContent = fmt(wifNum(bal));
+    balancePill.classList.add('show');
   }
   connectBtn.addEventListener('click', async () => {
     if (!window.ethereum) { setStatus('No wallet found in this browser. Install Rabby or MetaMask, then try again.'); return; }
@@ -561,158 +733,130 @@
       userAddress = await signer.getAddress();
       connectBtn.textContent = 'Connected: ' + short(userAddress);
       document.getElementById('disconnect-btn').style.display = '';
-      const wif = new ethers.Contract(WIF, WIF_ABI, provider);
-      const bal = await wif.balanceOf(userAddress);
-      const balWif = Number(ethers.formatUnits(bal, 18));
-      balanceVal.textContent = fmt(balWif);
-      balancePill.classList.add('show');
-      enterBtn.disabled = false; enterBtn.textContent = 'Enter';
+      await refreshBalance();
       setStatus('Connected on Robinhood Chain.');
       await refreshChain();
-      setInterval(refreshChain, 30000);
     } catch (e) {
       connectBtn.disabled = false; connectBtn.textContent = 'Connect wallet';
       setStatus('Could not connect: ' + (e && e.message ? e.message : e) + ' Check that your wallet is on Robinhood Chain (4663).');
     }
   });
-  const disconnectBtn = document.getElementById('disconnect-btn');
-  disconnectBtn.addEventListener('click', () => {
+  document.getElementById('disconnect-btn').addEventListener('click', () => {
     // Page-side disconnect: forgets this site's session. To fully revoke the
-    // site inside the wallet, disconnect it in Rabby / MetaMask under
-    // connected sites as well — the listeners below then clear this page too.
+    // site inside the wallet, disconnect it in Rabby / MetaMask as well.
     doDisconnect('Disconnected from this site. Reconnect anytime — nothing was sent, nothing moved.');
   });
-  // Listen to the wallet itself: disconnecting this site inside Rabby /
-  // MetaMask, switching account, or switching network must update the page
-  // immediately — no reload, no stale "Connected" state.
   if (window.ethereum && window.ethereum.on) {
     window.ethereum.on('accountsChanged', async (accounts) => {
-      if (!accounts || accounts.length === 0) {
-        doDisconnect('Wallet disconnected this site — session cleared. Reconnect anytime.');
-        return;
-      }
+      if (!accounts || accounts.length === 0) { doDisconnect('Wallet disconnected this site — session cleared. Reconnect anytime.'); return; }
       if (signer && userAddress && accounts[0].toLowerCase() !== userAddress.toLowerCase()) {
-        userAddress = accounts[0];
-        connectBtn.textContent = 'Connected: ' + short(userAddress);
         try {
-          const wif = new ethers.Contract(WIF, WIF_ABI, provider);
-          balanceVal.textContent = fmt(Number(ethers.formatUnits(await wif.balanceOf(userAddress), 18)));
-          await refreshChain();
+          signer = await provider.getSigner(); userAddress = await signer.getAddress();
+          connectBtn.textContent = 'Connected: ' + short(userAddress);
+          await refreshBalance(); await refreshChain();
         } catch (e) { /* keep the last render if a read fails */ }
       }
     });
     window.ethereum.on('chainChanged', (chainId) => {
-      if (parseInt(chainId, 16) !== CHAIN_ID) {
-        doDisconnect('Network changed away from Robinhood Chain — session cleared. Switch back to chain 4663 and reconnect.');
-      }
+      if (parseInt(chainId, 16) !== CHAIN_ID) doDisconnect('Network changed away from Robinhood Chain — session cleared. Switch back to chain 4663 and reconnect.');
     });
   }
+  function rejected(msg){ return msg.includes('user rejected') || msg.includes('User denied') || msg.includes('ACTION_REJECTED'); }
+
   enterBtn.addEventListener('click', async () => {
     if (!signer) return;
+    if (state && chainNow() >= state.end) { setStatus('This round has ended — press Settle to start the next round, then enter.'); return; }
     const agentId = agentIds[pickedAgent];
     const rawStr = (amountInput.value || '').trim();
     const amountNum = Number(rawStr);
-    if (!Number.isFinite(amountNum) || amountNum < 100 || amountNum > 100000){
-      setStatus('Stake must be between 100 and 100,000 $WIF.');
-      return;
-    }
-    const amountRaw = ethers.parseUnits(rawStr, 18);
+    if (!Number.isFinite(amountNum) || amountNum < 100 || amountNum > 100000){ setStatus('Stake must be between 100 and 100,000 $WIF.'); return; }
+    let amountRaw;
+    try { amountRaw = ethers.parseUnits(rawStr, 18); } catch (e) { setStatus('Enter a plain number of $WIF, e.g. 100.'); return; }
     try {
-      enterBtn.disabled = true; enterBtn.textContent = 'Working…';
+      busy = true; enterBtn.disabled = true; enterBtn.textContent = 'Working…';
       const wif = new ethers.Contract(WIF, WIF_ABI, signer);
       const arena = new ethers.Contract(ARENA, ARENA_ABI, signer);
       const allowed = await wif.allowance(userAddress, ARENA);
       if (allowed < amountRaw) {
         setStatus('Step 1 of 2: approve exactly ' + amountNum + ' $WIF in your wallet…');
         const tx1 = await wif.approve(ARENA, amountRaw);
-        setStatus('Approve sent: <a href="' + EXPLORER + tx1.hash + '" target="_blank" rel="noopener">view on Blockscout</a> — waiting for confirmation…');
+        setStatus('Approve sent: ' + txLink(tx1.hash, 'view on Blockscout') + ' — waiting for confirmation…');
         await tx1.wait();
       }
       setStatus('Step 2 of 2: enter ' + pickedAgent + ' (agent ' + agentId + ') with ' + amountNum + ' $WIF…');
       const tx2 = await arena.enter(agentId, amountRaw);
-      setStatus('Enter sent: <a href="' + EXPLORER + tx2.hash + '" target="_blank" rel="noopener">view on Blockscout</a> — waiting for confirmation…');
+      setStatus('Enter sent: ' + txLink(tx2.hash, 'view on Blockscout') + ' — waiting for confirmation…');
       await tx2.wait();
-      setStatus('You are in! ' + pickedAgent + ' backed with ' + amountNum + ' $WIF. Tx: <a href="' + EXPLORER + tx2.hash + '" target="_blank" rel="noopener">view on Blockscout</a>');
+      setStatus('You are in! ' + pickedAgent + ' backed with ' + amountNum + ' $WIF. Tx: ' + txLink(tx2.hash, 'view on Blockscout'));
       enterBtn.textContent = 'Entered ✓';
-      await refreshChain();
-      const bal = await new ethers.Contract(WIF, WIF_ABI, provider).balanceOf(userAddress);
-      balanceVal.textContent = fmt(Number(ethers.formatUnits(bal, 18)));
     } catch (e) {
-      enterBtn.disabled = false; enterBtn.textContent = 'Enter';
       const msg = (e && e.message) ? e.message : String(e);
-      if (msg.includes('user rejected') || msg.includes('User denied')) setStatus('You rejected the transaction in your wallet. Nothing moved. Try again when ready.');
+      if (rejected(msg)) setStatus('You rejected the transaction in your wallet. Nothing moved. Try again when ready.');
+      else if (msg.includes('round closed')) setStatus('This round has ended — press Settle to start the next round, then enter.');
       else setStatus('Enter failed: ' + msg + ' Check your $WIF balance and that the round is still open.');
+      enterBtn.textContent = 'Enter';
     }
+    busy = false; await refreshChain(); await refreshBalance().catch(() => {});
   });
-  const claimBtn = document.getElementById('claim-btn');
+
   claimBtn.addEventListener('click', async () => {
     if (!signer) { setStatus('Connect your wallet first, then claim.'); return; }
+    await refreshChain();
+    if (!claimable.length) { setStatus('Nothing to claim: this wallet has no unclaimed prize in any settled V3 round (you must have backed the winning agent).'); return; }
+    const c = claimable[0];
     try {
-      claimBtn.disabled = true; claimBtn.textContent = 'Checking…';
+      busy = true; claimBtn.disabled = true; claimBtn.textContent = 'Claiming…';
       const arena = new ethers.Contract(ARENA, ARENA_ABI, signer);
-      const current = Number(await arena.currentRoundId());
-      if (current < 1) { setStatus('No finished round to claim yet.'); claimBtn.disabled = false; claimBtn.textContent = 'Claim prize — last settled round'; return; }
-      const last = current - 1;
-      const info = await arena.roundInfo(last);
-      if (!info[2]) { setStatus('Round ' + last + ' is not settled yet. Nobody has settled it — anyone can press Settle (there is no owner in V3), then you can claim.'); claimBtn.disabled = false; claimBtn.textContent = 'Claim prize — last settled round'; return; }
-      const winner = Number(info[3]);
-      const myBacking = await arena.backerAmount(last, userAddress, winner);
-      if (myBacking === 0n) { setStatus('You did not back the winning agent in round ' + last + ', so there is nothing to claim for that round.'); claimBtn.disabled = false; claimBtn.textContent = 'Claim prize — last settled round'; return; }
-      setStatus('Claiming your round ' + last + ' prize (' + fmt(Number(ethers.formatUnits(myBacking, 18))) + ' $WIF backed on the winner)…');
-      const tx = await arena.claim(last);
-      setStatus('Claim sent: <a href="' + EXPLORER + tx.hash + '" target="_blank" rel="noopener">view on Blockscout</a> — waiting for confirmation…');
+      setStatus('Claiming your round ' + c.roundId + ' prize (' + fmt(wifNum(c.amount)) + ' $WIF)…');
+      const tx = await arena.claim(c.roundId);
+      setStatus('Claim sent: ' + txLink(tx.hash, 'view on Blockscout') + ' — waiting for confirmation…');
       await tx.wait();
-      setStatus('Claimed! Round ' + last + ' prize sent to your wallet. Tx: <a href="' + EXPLORER + tx.hash + '" target="_blank" rel="noopener">view on Blockscout</a>');
-      await refreshChain();
-      const bal = await new ethers.Contract(WIF, WIF_ABI, provider).balanceOf(userAddress);
-      balanceVal.textContent = fmt(Number(ethers.formatUnits(bal, 18)));
+      setStatus('Claimed! Round ' + c.roundId + ' prize sent to your wallet. Tx: ' + txLink(tx.hash, 'view on Blockscout'));
     } catch (e) {
       const msg = (e && e.message) ? e.message : String(e);
-      if (msg.includes('user rejected') || msg.includes('User denied')) setStatus('You rejected the claim in your wallet. Nothing moved.');
-      else setStatus('Claim failed: ' + msg + ' Make sure the round is settled, you backed the winner, and you have not claimed this round already.');
+      if (rejected(msg)) setStatus('You rejected the claim in your wallet. Nothing moved.');
+      else setStatus('Claim failed: ' + msg);
     }
-    claimBtn.disabled = false; claimBtn.textContent = 'Claim prize — last settled round';
+    busy = false; await refreshChain(); await refreshBalance().catch(() => {});
   });
-  const snapshotBtn = document.getElementById('snapshot-btn');
+
   snapshotBtn.addEventListener('click', async () => {
     if (!signer) { setStatus('Connect your wallet first, then snapshot.'); return; }
     try {
-      snapshotBtn.disabled = true; snapshotBtn.textContent = 'Snapshotting…';
+      busy = true; snapshotBtn.disabled = true; snapshotBtn.textContent = 'Snapshotting…';
       const arena = new ethers.Contract(ARENA, ARENA_ABI, signer);
       const tx = await arena.snapshot();
-      setStatus('Snapshot sent: <a href="' + EXPLORER + tx.hash + '" target="_blank" rel="noopener">view on Blockscout</a> — waiting for confirmation…');
+      setStatus('Snapshot sent: ' + txLink(tx.hash, 'view on Blockscout') + ' — waiting for confirmation…');
       await tx.wait();
-      setStatus('Snapshot recorded! The contract read the live pool price itself — no price was supplied by anyone. Tx: <a href="' + EXPLORER + tx.hash + '" target="_blank" rel="noopener">view on Blockscout</a>');
-      await refreshChain();
+      setStatus('Snapshot recorded! The contract read the live pool price itself — no price was supplied by anyone. Tx: ' + txLink(tx.hash, 'view on Blockscout'));
     } catch (e) {
       const msg = (e && e.message) ? e.message : String(e);
-      if (msg.includes('user rejected') || msg.includes('User denied')) setStatus('You rejected the snapshot in your wallet. Nothing moved.');
+      if (rejected(msg)) setStatus('You rejected the snapshot in your wallet. Nothing moved.');
       else if (msg.includes('too soon')) setStatus('Snapshot too soon — snapshots are at most once per 5 minutes. Wait a bit and try again.');
       else if (msg.includes('max snapshots')) setStatus('This round already has the maximum 16 price points — no more snapshots needed.');
-      else if (msg.includes('round closed')) setStatus('This round already ended — snapshot the next round instead, or press Settle.');
+      else if (msg.includes('round closed')) setStatus('This round already ended — press Settle to start the next round.');
       else setStatus('Snapshot failed: ' + msg);
     }
-    snapshotBtn.disabled = false; snapshotBtn.textContent = '📸 Snapshot price — anyone can call';
+    busy = false; await refreshChain();
   });
-  const settleBtn = document.getElementById('settle-btn');
+
   settleBtn.addEventListener('click', async () => {
     if (!signer) { setStatus('Connect your wallet first, then settle.'); return; }
     try {
-      settleBtn.disabled = true; settleBtn.textContent = 'Settling…';
+      busy = true; settleBtn.disabled = true; settleBtn.textContent = 'Settling…';
       const arena = new ethers.Contract(ARENA, ARENA_ABI, signer);
       const tx = await arena.settle();
-      setStatus('Settle sent: <a href="' + EXPLORER + tx.hash + '" target="_blank" rel="noopener">view on Blockscout</a> — waiting for confirmation…');
+      setStatus('Settle sent: ' + txLink(tx.hash, 'view on Blockscout') + ' — waiting for confirmation…');
       await tx.wait();
-      setStatus('Settled! The contract computed the winner from the recorded pool prices — nobody chose it. Winners can now claim. Tx: <a href="' + EXPLORER + tx.hash + '" target="_blank" rel="noopener">view on Blockscout</a>');
-      await refreshChain();
+      setStatus('Settled! The contract computed the winner from the recorded pool prices — nobody chose it — and the next round has started. Tx: ' + txLink(tx.hash, 'view on Blockscout'));
     } catch (e) {
       const msg = (e && e.message) ? e.message : String(e);
-      if (msg.includes('user rejected') || msg.includes('User denied')) setStatus('You rejected the settle in your wallet. Nothing moved.');
+      if (rejected(msg)) setStatus('You rejected the settle in your wallet. Nothing moved.');
       else if (msg.includes('round not over')) setStatus('The round is not over yet — settle only works after the hour ends.');
       else if (msg.includes('already settled')) setStatus('This round is already settled — the next round is live.');
       else setStatus('Settle failed: ' + msg);
     }
-    settleBtn.disabled = false; settleBtn.textContent = '⚖️ Settle round — anyone can call';
+    busy = false; await refreshChain();
   });
 </script>
 </body>
