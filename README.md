@@ -62,12 +62,30 @@ Notes: earlier drafts carried truncated hashes for the V2 deploy and the V3 roun
 
 A public keeper wallet, [`0xD0917194aa2091eB341A41fa806AeD03243b6097`](https://robinhoodchain.blockscout.com/address/0xD0917194aa2091eB341A41fa806AeD03243b6097), keeps rounds moving: it calls `settle()` when a round has ended and takes 3 `snapshot()`s per round (endTime − 40 min, − 20 min, − 45 s). Both functions are permissionless and take no price input — the keeper has exactly the same power as any visitor pressing the buttons, and the contract reads the pool price itself. It never sends value and calls nothing else. If it stops, anyone can still press **Snapshot** and **Settle** on the site.
 
+## Tests
+
+Foundry test suite for the **unmodified** V3 source in `contracts/` (the deployed contract is immutable; tests never deploy to a live chain or broadcast anything).
+
+```bash
+git submodule update --init --recursive   # forge-std (lib/forge-std, v1.17.0)
+forge test                                # unit + known-issue + live fork tests
+SKIP_FORK=true forge test                 # offline: skip the live fork tests
+```
+
+- `test/WifAgentArenaV3.t.sol` (37 tests, 3 fuzz): enter limits and per-agent/per-backer accounting, 5-minute snapshot spacing, round timing, permissionless settle, exact 50/30/20 split and burn, carry-over, pro-rata claims, double-claim and loser-claim reverts, tie-break formula, and a fuzz test that checks onchain scoring against an independent reference model. Uses a mock $WIF and a mock PoolManager (`extsload` at `POOLS_SLOT` 6).
+- `test/KnownIssues.t.sol` (9 tests): each test **demonstrates** a finding from [SECURITY.md](SECURITY.md) by asserting today's behaviour (`test_KnownIssue_A_…` to `test_KnownIssue_E_…`, plus the settle-overflow limit). Passing means the issue is still present, as expected for an immutable contract.
+- `test/Fork.t.sol` (6 tests): read-only checks against the live V3 on Robinhood Chain via a local fork: live runtime bytecode equals this repo's source compiled with solc 0.8.38 (metadata hash excluded), constructor args, `POOLS_SLOT` 6 returns a real pool price, rounds 1–4 were tie-break wins, rounds 2 and 4 prizes are stranded, and a local-only `settle()` simulation. Skips itself if the RPC is unreachable.
+
+Result on 31 Oct 2026 (forge 1.8.7, solc 0.8.38): **52 passed, 0 failed** (46 offline + 6 fork).
+
+One extra observation from the tests: with 1-hour rounds and 5-minute spacing counted from the round start, at most 11 snapshots fit (12 price points), so the `MAX_PRICE_POINTS = 16` cap is never reached (`test_Snapshot_AtMost12PointsFitInOneHour_Max16Unreachable`). Harmless, but the real limit is 12.
+
 ## Fight videos
 
 `frontend/assets/` holds a 10-second win video per agent (made with Gemini from the plush fighter images). The web shows a winner's video only after that round is settled onchain — the video never decides the winner.
 
 ## Status
 
-Not audited. V1, V2 and V3 sources are verified on Sourcify. This is a hackathon MVP. Known issues: [SECURITY.md](SECURITY.md).
+Not audited. V1, V2 and V3 sources are verified on Sourcify. V3 has a Foundry test suite (see Tests). This is a hackathon MVP. Known issues: [SECURITY.md](SECURITY.md).
 
 <!-- Git deploy trigger: Vercel Git connected 2026-10-25, Root Directory frontend/ -->

@@ -1,0 +1,20 @@
+# Foundry project for the WIF Agent Arena contracts.
+# Tests only: the contracts in contracts/ are deployed and immutable.
+# The website lives in frontend/ (Vercel Root Directory) and is not affected.
+[profile.default]
+src = "contracts"
+test = "test"
+out = "out"
+libs = ["lib"]
+# Same compiler settings as the Sourcify-verified V3 deployment
+# (solc 0.8.38, optimizer disabled, default EVM version).
+solc_version = "0.8.38"
+optimizer = false
+# Fork test compares live runtime bytecode with the local build.
+fs_permissions = [{ access = "read", path = "./out" }]
+
+[rpc_endpoints]
+robinhood = "https://rpc.mainnet.chain.robinhood.com"
+
+[lint]
+lint_on_build = false
