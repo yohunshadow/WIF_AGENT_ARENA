@@ -10,7 +10,7 @@ State and evidence were last re-read from `https://rpc.mainnet.chain.robinhood.c
 
 - No owner, no admin, no upgrade path, no privileged function. Constructor arguments are immutable.
 - `enter(agentId, amount)`: 100–100,000 $WIF per call while `block.timestamp < endTime`.
-- `snapshot()`: anyone, while the round is open, at most once per 5 minutes, max 16 price points per round. The contract reads the WIF/ETH Uniswap V4 pool price itself via `PoolManager.extsload` (Pool.State slot0, `POOLS_SLOT = 6`). The caller supplies no price.
+- `snapshot()`: anyone, while the round is open, at most once per 5 minutes, max 16 price points per round (in practice at most 12 fit in one hour, because spacing is counted from the round start; see `test_Snapshot_AtMost12PointsFitInOneHour_Max16Unreachable`). The contract reads the WIF/ETH Uniswap V4 pool price itself via `PoolManager.extsload` (Pool.State slot0, `POOLS_SLOT = 6`). The caller supplies no price.
 - `settle()`: anyone, after `endTime`. Scores the three fixed strategies over the recorded price points, picks the winner, burns 30% with `$WIF.burn()`, keeps 50% (+ the carried pool) as prize, carries 20% to the next round, and starts the next round.
 - `claim(roundId)`: pull-based, pro-rata by $WIF backed on the winning agent.
 
@@ -35,6 +35,8 @@ Each agent starts flat; a position for step `i → i+1` needs history `0..i`, so
 
 The winner was still computed by the contract (nobody chose it), but it was a deterministic hash, not the strategy contest the UI describes. The web scoreboard and round history now label tie-break wins explicitly.
 
+**Tests:** `test_KnownIssue_A_TieBreakDecidesRoundsWithFewerThan3Points` (mock) and `test_Fork_Rounds1to4WereTieBreakWins` (re-derives the four live winners from onchain price points).
+
 **Mitigation (live):** a public keeper wallet takes 3 snapshots per round (see "Liveness"), so rounds it services get 4 price points (start + 3) and the strategies can actually diverge. Rounds before round 5 did not have this. Ties are still possible if the price does not move between snapshots.
 
 ### B. The outcome becomes predictable before entries close (High — design)
@@ -48,6 +50,8 @@ The winner was still computed by the contract (nobody chose it), but it was a de
 **Impact:** a rational late entrant takes the prize from earlier backers of other agents. 
 **Mitigation (live, partial):** the keeper's last snapshot targets ~45 s before `endTime`, shrinking the predictable window from up to 5 minutes to under a minute when nobody interferes. This cannot stop a griefer who snapshots earlier. Fix requires a contract change (V4).
 
+**Tests:** `test_KnownIssue_B_OutcomeFrozenLateEntrantWins`, `test_KnownIssue_B_NoSnapshotWinnerKnownAtRoundStart`.
+
 ### C. Prize is stranded when nobody backed the winner (Medium — funds locked)
 
 `claim()` requires `wifByAgent[winner] > 0`. If the winning agent has no backers, that round's `prizePool` — which includes the previous round's carried 20% — can never be claimed and is not rolled forward. It stays in the contract forever.
@@ -59,9 +63,13 @@ The winner was still computed by the contract (nobody chose it), but it was a de
 
 The contract's $WIF balance (40 $WIF at check time) equals these two stranded prizes; `nextRoundPool` is 0. Any future round with zero entries on the winning agent strands its prize the same way. There is no admin function to recover it, by design.
 
+**Tests:** `test_KnownIssue_C_StrandedPrize_NoEntriesRoundEatsCarry`, `test_KnownIssue_C_StrandedPrize_WinnerHadNoBackers`, `test_Fork_Rounds2and4PrizesStranded`.
+
 ### D. Spot-price (slot0) manipulation (Medium — design)
 
 Snapshots read the pool's instantaneous `sqrtPriceX96`. The WIF/ETH pool is shallow (~$94K liquidity at last check). In a single transaction an attacker can swap to move the price, call `snapshot()`, and swap back, paying only swap fees and gas. One manipulated point can flip which strategy was "long" on a step and therefore the winner. The 5-minute spacing and multi-point scoring dilute but do not prevent this. Slot0's `lpFee` field reads 0 for this pool (it may be a dynamic-fee pool; not confirmed), which would make round-trip manipulation cheaper.
+
+**Test:** `test_KnownIssue_D_SingleTxSpotManipulationFlipsWinner` (one call moves the price, snapshots, restores it, and changes the winner).
 
 ### E. Liveness: rounds only advance when someone calls `settle()` (Low — availability)
 
@@ -71,10 +79,12 @@ A new round starts only inside `settle()`. Between 26 Oct 14:42 WIB and 30 Oct 2
 - Public keeper wallet [`0xD0917194aa2091eB341A41fa806AeD03243b6097`](https://robinhoodchain.blockscout.com/address/0xD0917194aa2091eB341A41fa806AeD03243b6097) settles ended rounds and takes 3 snapshots per round (endTime − 40 min, − 20 min, − 45 s). It can only call `settle()` / `snapshot()`, which are permissionless and price-input-free, so the keeper has no more power than any visitor. It settled round 4 in [0x662b0292…bccd](https://robinhoodchain.blockscout.com/tx/0x662b0292d8338365c5e4f56085bf3fcf908748704d70ece0affffcd2d525bccd).
 - The web shows "Round ended — settle to start the next round" and a public **Settle & start next round** button whenever a round has ended unsettled.
 
+**Test:** `test_KnownIssue_E_EndedRoundBlocksEntriesUntilSettle`.
+
 ### Other notes
 
 - Rounding dust from pro-rata claims stays in the contract.
-- Extreme single-step price moves could in theory overflow the capital math and make `settle()` revert permanently (stated in the source; practically unreachable for hourly $WIF moves).
+- Extreme price moves can overflow the capital math and make `settle()` revert permanently (stated in the source). The tests show it does not need a single huge step: mean-reversion's capital compounds over repeated down→up swings, so with 12 points, five low/high swings of ~1.65e8× in sqrtPrice (~2.7e16× in price) are enough. If that happened, the round could never settle and its entries plus the carry would stay locked. We have not shown this is economically feasible on the live pool; it depends on how much liquidity sits across such a price range. Tests: `test_KnownLimit_ExtremeSwingsOverflowSettle_V4Bounds`, `test_KnownLimit_CompoundingOverflowThreshold`.
 - The next round's start price is read at settle time, not at the previous `endTime`.
 - Frontend: ethers v6.13.0 is pinned with Subresource Integrity; approvals are for the exact stake only (no unlimited approvals); the site never handles keys.
 
@@ -99,7 +109,7 @@ A new round starts only inside `settle()`. Between 26 Oct 14:42 WIB and 30 Oct 2
 4. **No stranded prizes:** if the winner has no backers, roll the prize into `nextRoundPool` (or refund pro-rata) (fixes C).
 5. **Avoid default ties:** require ≥ 3 points to score; otherwise roll the round over or refund (fixes A).
 6. **Liveness:** let `enter()` auto-settle/roll an ended round, or start rounds on a fixed clock (fixes E).
-7. Foundry unit + fork tests against the live PoolManager, and an external review before any real-value use.
+7. Keep the Foundry suite (unit, known-issue and live fork tests; see README "Tests") and add an external review before any real-value use. Cap or saturate the capital math so `settle()` can never revert on extreme prices.
 
 ## Reporting
 
