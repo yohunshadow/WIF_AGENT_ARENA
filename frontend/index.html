@@ -65,8 +65,7 @@
   .agent.hit{animation:hit .45s ease}
   @keyframes hit{ 0%{transform:translateX(0)} 25%{transform:translateX(-7px) rotate(-1deg)} 50%{transform:translateX(6px)} 100%{transform:translateX(0)} }
   .agent .emoji{font-size:2.6rem; line-height:1; filter:drop-shadow(0 4px 14px rgba(0,0,0,.5))}
-  .agent .fighter-img{width:100%; height:210px; object-fit:cover; object-position:top; border-radius:16px; border:2px solid var(--line); display:block; margin-bottom:14px; transition:transform .3s ease}
-  .agent:hover .fighter-img{transform:scale(1.02)}
+  .agent .fighter-img{width:100%; height:210px; object-fit:cover; object-position:top; border-radius:16px; border:2px solid var(--line); display:block; margin-bottom:14px; transform-origin:center bottom}
   .agent.hit .fighter-img{transform:scale(1.05) rotate(-1deg)}
   .agent h3{font-family:"Archivo Black",sans-serif; font-size:1.35rem; margin:14px 0 4px; text-transform:uppercase}
   .agent p{color:var(--muted); margin:0 0 16px; font-size:0.95rem}
@@ -82,17 +81,24 @@
   .feed b{color:var(--lime)}
   .feed-note{color:var(--muted); font-size:0.85rem; margin-top:8px}
   .pick{margin-top:16px; background:linear-gradient(120deg,#c8ff2e,#3ee6ff); color:#0d0d12; border-radius:24px; padding:24px; display:flex; justify-content:space-between; gap:20px; align-items:flex-start; flex-wrap:wrap; box-shadow:0 18px 50px rgba(200,255,46,.18)}
+  .pick > div:first-child{flex:1 1 320px; min-width:0}
+  .pick .price{flex:0 0 auto}
   .pick h3{font-family:"Archivo Black",sans-serif; font-size:1.4rem; margin:0 0 4px; text-transform:uppercase}
   .pick p{margin:0; font-weight:500; max-width:52ch}
   .amount-row{display:flex; gap:10px; align-items:center; margin-top:14px; flex-wrap:wrap}
   .amount-row label{font-weight:700}
   .amount-row input{width:170px; border:2px solid #0d0d12; border-radius:12px; padding:10px 12px; font-family:"JetBrains Mono",monospace; font-size:1rem; font-weight:700; background:#fff; color:#0d0d12}
   .amount-row span{font-size:0.85rem; font-weight:500}
-  .enter-btn{background:#0d0d12; color:#f5f3ee; border:0; border-radius:14px; padding:14px 22px; font-weight:700; font-family:inherit; font-size:1rem; cursor:pointer; margin-top:14px; transition:transform .15s ease}
+  .enter-btn{background:#0d0d12; color:#f5f3ee; border:0; border-radius:14px; padding:14px 22px; font-weight:700; font-family:inherit; font-size:1rem; cursor:pointer; margin-top:14px; transition:transform .15s ease; white-space:normal; text-align:center; max-width:100%}
   .enter-btn:hover{transform:translateY(-1px)}
   .enter-btn:disabled{opacity:.55; cursor:not-allowed}
-  .status{margin-top:12px; font-size:0.9rem; min-height:1.4em}
-  .status a{color:#0d0d12; font-weight:700}
+  .play-status{font-size:0.9rem; display:flex; flex-direction:column; gap:6px; width:100%; min-width:0; position:relative; z-index:1; line-height:1.45}
+  .play-status:has(.status-step:not(:empty)),
+  .play-status:has(.status-detail:not(:empty)){margin-top:14px; padding-top:12px; border-top:1.5px solid rgba(13,13,18,.2)}
+  .play-status .status-step,.play-status .status-detail{display:block; overflow-wrap:anywhere; word-break:break-word}
+  .play-status .status-step:empty,.play-status .status-detail:empty{display:none}
+  .play-status .status-step{font-weight:700}
+  .play-status a{color:#0d0d12; font-weight:700}
   .pick .price{font-family:"JetBrains Mono",monospace; font-size:1.8rem; font-weight:700}
   .pick .price small{display:block; font-family:"Space Grotesk",sans-serif; font-size:0.85rem; font-weight:500}
   .split{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:28px}
@@ -116,39 +122,79 @@
   footer{margin-top:56px; padding-top:20px; border-top:1.5px solid var(--line); color:var(--muted); font-size:0.85rem}
   footer a{color:var(--muted)}
 
-  /* --- Real fight animation (visual only) --- */
+  /* --- Fight animation (visual only). Idle bob, pick reactions, closing bout. --- */
   .agent{position:relative; overflow:visible}
+  .agent.idle .fighter-img{animation:idleBob 3.4s ease-in-out infinite}
+  .agent:nth-child(2).idle .fighter-img{animation-delay:-1.1s}
+  .agent:nth-child(3).idle .fighter-img{animation-delay:-2.2s}
+  @keyframes idleBob{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+  .agent.react-momentum .fighter-img{animation:reactStance .9s ease}
+  @keyframes reactStance{ 0%{transform:translateX(0) rotate(0)} 35%{transform:translateX(-14px) rotate(-7deg) scale(1.05)} 70%{transform:translateX(10px) rotate(5deg) scale(1.04)} 100%{transform:translateX(0) rotate(0)} }
+  .agent.react-mean .fighter-img{animation:reactFlex 1s ease}
+  @keyframes reactFlex{ 0%{transform:translateY(0) scale(1)} 30%{transform:translateY(12px) scale(1.03,.92)} 65%{transform:translateY(-18px) scale(1.1)} 100%{transform:translateY(0) scale(1)} }
+  .agent.react-breakout .fighter-img{animation:reactPunch .8s ease}
+  @keyframes reactPunch{ 0%{transform:translateX(0) rotate(0)} 45%{transform:translateX(22px) translateY(-10px) rotate(-8deg) scale(1.08)} 100%{transform:translateX(0) rotate(0)} }
   .agent.attack{border-color:var(--lime); box-shadow:0 0 0 3px rgba(200,255,46,.3), 0 14px 40px rgba(0,0,0,.5)}
-  .agent.attack .fighter-img{transform:translateY(-12px) scale(1.12) rotate(-2deg)}
+  .agent.attack .fighter-img{animation:none; transform:translateY(-12px) scale(1.12) rotate(-2deg)}
   .agent.defend{animation:defendShake .45s ease}
-  .agent.defend .fighter-img{filter:brightness(1.5) saturate(1.5)}
+  .agent.defend .fighter-img{animation:none; filter:brightness(1.5) saturate(1.5)}
   @keyframes defendShake{ 0%{transform:translateX(0)} 20%{transform:translateX(-12px) rotate(-2deg)} 40%{transform:translateX(10px) rotate(1deg)} 60%{transform:translateX(-7px)} 100%{transform:translateX(0)} }
   .impact{position:absolute; left:50%; top:96px; transform:translate(-50%,-50%) scale(0); font-size:3.2rem; z-index:3; pointer-events:none; filter:drop-shadow(0 4px 14px rgba(0,0,0,.6))}
   .impact.show{animation:impactPop .65s ease forwards}
   @keyframes impactPop{ 0%{transform:translate(-50%,-50%) scale(0) rotate(-25deg); opacity:1} 35%{transform:translate(-50%,-50%) scale(1.5) rotate(10deg); opacity:1} 100%{transform:translate(-50%,-50%) scale(1.1) rotate(0deg); opacity:0} }
   .arena-shake{animation:arenaShake .4s ease}
   @keyframes arenaShake{ 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 50%{transform:translateX(4px)} 75%{transform:translateX(-3px)} }
+  .lead-note{margin:0 0 14px; background:#1e1e2c; border:1.5px solid #ffd500; border-radius:16px; padding:12px 16px; font-size:0.95rem}
+  .lead-note[hidden]{display:none}
+  .lead-badge{display:inline-block; margin-top:8px; font-size:0.75rem; font-weight:700; line-height:1.3; padding:5px 10px; border-radius:99px; background:#ffd500; color:#0d0d12}
+  .lead-badge[hidden]{display:none}
+  .debug-note{margin:0 0 12px; color:var(--muted); font-size:0.85rem}
+  .debug-note[hidden]{display:none}
   .fight-controls{display:flex; gap:10px; align-items:center; margin-top:14px; flex-wrap:wrap}
   .fight-controls button{background:var(--panel2); color:var(--text); border:1.5px solid var(--line); border-radius:999px; padding:9px 16px; font-weight:700; font-family:inherit; cursor:pointer}
   .fight-controls button:hover{border-color:var(--lime)}
   .fight-score{font-family:"JetBrains Mono",monospace; font-size:0.85rem; color:var(--muted)}
   .fight-score b{color:var(--lime)}
 
-  /* --- Full-fight cinematic: ends with one winner --- */
+  /* --- Demo cinematic: scripted bout, not a round result --- */
   .agent.ko{opacity:.75}
-  .agent.ko .fighter-img{filter:grayscale(1) brightness(.8); transform:translateY(24px) rotate(14deg) scale(.92)}
+  .agent.ko .fighter-img{animation:none; filter:grayscale(1) brightness(.8); transform:translateY(24px) rotate(14deg) scale(.92)}
   .agent.winner{border-color:#ffd500; box-shadow:0 0 0 3px rgba(255,213,0,.4), 0 14px 40px rgba(0,0,0,.5)}
   .agent.winner .fighter-img{animation:winnerBounce .8s ease-in-out infinite}
   @keyframes winnerBounce{ 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-14px) scale(1.06)} }
   .confetti{position:absolute; top:0; width:10px; height:14px; z-index:4; pointer-events:none; animation:confettiFall 2.8s ease-in forwards}
   @keyframes confettiFall{ to{transform:translateY(340px) rotate(720deg); opacity:0} }
 
-  .winner-video{display:none; margin-top:16px; background:var(--panel); border:2px solid #ffd500; border-radius:24px; padding:20px}
+  .winner-banner{display:none; margin:0 0 16px; background:var(--panel); border:2px solid #ffd500; border-radius:24px; padding:20px; box-shadow:0 14px 40px rgba(0,0,0,.35)}
+  .winner-banner.show{display:block}
+  .winner-banner-head{display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap}
+  .winner-banner h3{font-family:"Archivo Black",sans-serif; margin:0; text-transform:uppercase; font-size:clamp(1.15rem,3vw,1.7rem); line-height:1.1}
+  .winner-banner .dismiss{background:transparent; color:var(--text); border:1.5px solid var(--line); border-radius:999px; padding:8px 14px; font-weight:700; font-family:inherit; cursor:pointer; flex:0 0 auto}
+  .winner-banner .dismiss:hover{border-color:var(--lime)}
+  .winner-banner video{width:100%; max-height:70vh; border-radius:16px; display:block; margin-top:12px; background:#000}
+  .winner-banner video[hidden]{display:none}
+  .winner-banner p{color:var(--muted); margin:10px 0 0; font-size:0.95rem; overflow-wrap:anywhere}
+  .winner-banner .winner-debug{color:#ffd500; margin:8px 0 0; font-size:0.85rem}
+  .winner-video{display:none; margin-top:16px; background:var(--panel); border:2px solid var(--line); border-radius:24px; padding:20px}
   .winner-video.show{display:block}
   .winner-video h3{font-family:"Archivo Black",sans-serif; margin:0 0 10px; text-transform:uppercase}
   .winner-video video{width:100%; border-radius:16px; display:block; background:#000}
   .winner-video p{color:var(--muted); margin:10px 0 0; font-size:0.9rem}
-  @media (prefers-reduced-motion:reduce){ .ticker span{animation:none} .agent{transition:none} .agent.attack .fighter-img,.agent.defend .fighter-img{transform:none; filter:none} .impact{display:none} }
+  @media (prefers-reduced-motion:reduce){
+    .ticker span{animation:none}
+    .agent{transition:none}
+    .agent.idle .fighter-img,
+    .agent.react-momentum .fighter-img,
+    .agent.react-mean .fighter-img,
+    .agent.react-breakout .fighter-img,
+    .agent.attack .fighter-img,
+    .agent.defend .fighter-img,
+    .agent.winner .fighter-img,
+    .agent.ko .fighter-img{animation:none; transform:none; filter:none}
+    .agent.defend{animation:none}
+    .impact,.confetti{display:none}
+    .arena-shake{animation:none}
+  }
 </style>
 </head>
 <body>
@@ -176,43 +222,55 @@
     </section>
 
     <section aria-label="Fight arena">
+      <p class="debug-note" id="debug-note" hidden></p>
+      <div class="winner-banner" id="winner-banner" role="status">
+        <div class="winner-banner-head">
+          <h3 id="winner-banner-title">Settled round</h3>
+          <button class="dismiss" id="winner-dismiss" type="button">Dismiss</button>
+        </div>
+        <p class="winner-debug" id="winner-banner-debug" hidden></p>
+        <video id="winner-banner-video" controls playsinline preload="metadata" hidden></video>
+        <p id="winner-banner-note"></p>
+      </div>
+      <p class="lead-note" id="lead-note" hidden></p>
       <div class="agents" id="agents">
-        <button class="agent" data-agent="Momentum" type="button">
+        <button class="agent idle" data-agent="Momentum" type="button">
           <img class="fighter-img" src="assets/media-generation-agent-momentum-plush-0-56146a9e-ca13-42e8-9112-9202ea25a42d.webp" alt="Momentum, fighter agent"><span class="impact" aria-hidden="true">💥</span>
           <h3>Momentum</h3>
           <p>Rides the trend. Steady pressure, no drama.</p>
           <div class="bar"><i style="width:0%"></i></div>
           <div class="stats"><span>share <b class="share">0%</b></span><span><b class="total">0</b> $WIF</span></div>
           <span class="tag">No backers yet</span>
+          <span class="lead-badge" hidden>Currently leading (unofficial preview)</span>
         </button>
-        <button class="agent" data-agent="Mean-reversion" type="button">
+        <button class="agent idle" data-agent="Mean-reversion" type="button">
           <img class="fighter-img" src="assets/media-generation-agent-mean-reversion-plush-0-eddb3b53-463c-4285-8b5b-cc0b62639327.webp" alt="Mean-reversion, fighter agent"><span class="impact" aria-hidden="true">💥</span>
           <h3>Mean-reversion</h3>
           <p>Fades the move. Buys the dip, sells the hype.</p>
           <div class="bar"><i style="width:0%"></i></div>
           <div class="stats"><span>share <b class="share">0%</b></span><span><b class="total">0</b> $WIF</span></div>
           <span class="tag">No backers yet</span>
+          <span class="lead-badge" hidden>Currently leading (unofficial preview)</span>
         </button>
-        <button class="agent selected" data-agent="Breakout" type="button">
+        <button class="agent idle selected" data-agent="Breakout" type="button">
           <img class="fighter-img" src="assets/media-generation-agent-breakout-plush-0-c74d13bf-5bee-4563-9c4d-22b95c21e421.webp" alt="Breakout, fighter agent"><span class="impact" aria-hidden="true">💥</span>
           <h3>Breakout</h3>
           <p>Backs the break. The crowd favourite so far.</p>
           <div class="bar"><i style="width:0%"></i></div>
           <div class="stats"><span>share <b class="share">0%</b></span><span><b class="total">0</b> $WIF</span></div>
           <span class="tag">Tap to pick</span>
+          <span class="lead-badge" hidden>Currently leading (unofficial preview)</span>
         </button>
       </div>
-      <div class="feed" id="fight-feed">🥊 <b>ARENA:</b> the bell hasn't rung yet — connect and back an agent to start the fight.</div>
+      <div class="feed" id="fight-feed">🥊 <b>ARENA:</b> the fighters are idle. Tap an agent to back it and see a short reaction. They fight on their own only in the last 5 minutes — an unofficial scoreboard preview, not the result.</div>
       <div class="fight-controls">
-        <button id="fight-toggle" type="button">⏸ Pause fight</button>
-        <button id="fight-now" type="button">🥊 Fight now!</button>
-        <button id="fight-full" type="button">🎬 Play full fight — until one wins</button>
-        <button id="winner-demo-btn" type="button">▶ Momentum win video (demo)</button>
-        <button id="winner-demo-btn-2" type="button">▶ Mean-reversion win video (demo)</button>
-        <button id="winner-demo-btn-3" type="button">▶ Breakout win video (demo)</button>
+        <button id="fight-full" type="button">Demo: scripted fight (not the result)</button>
+        <button id="winner-demo-btn" type="button">Demo: Momentum win video</button>
+        <button id="winner-demo-btn-2" type="button">Demo: Mean-reversion win video</button>
+        <button id="winner-demo-btn-3" type="button">Demo: Breakout win video</button>
         <span class="fight-score" id="fight-score">Hits landed — <b>Momentum 0</b> · <b>Mean-reversion 0</b> · <b>Breakout 0</b> (visual only)</span>
       </div>
-      <p class="feed-note">Fight visual: the plush fighters take turns lunging, punching and shaking the arena — but the bars are the real backed $WIF per agent, read live from the V3 contract. Hits, impact bursts and hit counts are animation only. The round winner is computed by the contract itself from live $WIF pool prices — no person chooses it, not the owner, not anyone.</p>
+      <p class="feed-note">The plush fighters idle until you pick one, or until the last 5 minutes of the round, when they fight as an unofficial preview of the live scoreboard. Hits, impact bursts and hit counts are animation only. The bars are the real backed $WIF per agent, read live from the V3 contract. The round winner is computed by the contract itself from pool prices when anyone calls settle() — no person chooses it, not the owner, not anyone.</p>
 
       <div class="winner-video" id="winner-video">
         <h3 id="winner-video-title">🏆 Winner video</h3>
@@ -235,7 +293,10 @@
           <button class="enter-btn" id="settle-btn" type="button" style="margin-top:10px;display:none">⚖️ Settle &amp; start next round — anyone can call</button>
           <p class="sec-note" style="margin-top:8px">Claim finds every settled V3 round where the connected wallet backed the winning agent and has not claimed yet, and claims them one by one. Prizes are never sent automatically — you claim them here. In V3 there is no owner: anyone can press Snapshot (records the live pool price, at most once per 5 minutes, max 16 price points per round) or Settle (after the hour ends — the contract computes the winner from the recorded prices, nobody chooses it). Snapshot and Settle cost a little gas, paid by whoever calls them.</p>
           <p class="sec-note" id="scoreboard">Live scoreboard: loading the current round's price points from chain…</p>
-          <div class="status" id="play-status"></div>
+          <div class="play-status" id="play-status" aria-live="polite">
+            <div class="status-step" id="status-step"></div>
+            <div class="status-detail" id="status-detail"></div>
+          </div>
         </div>
         <div class="price"><span id="pick-amount">100</span> $WIF<small>your stake · 50 / 30 / 20 split</small></div>
       </div>
@@ -250,7 +311,7 @@
 
     <section aria-label="Round history">
       <h2>Round history</h2>
-      <p class="sec-note" id="history-note">Every settled V3 round, read live from the contract's onchain events — real transactions only, no demo data. "Tie-break" means all three agents scored the same and the contract's fixed hash rule picked the winner (see SECURITY.md in the repo).</p>
+      <p class="sec-note" id="history-note">Every settled V3 round, read live from the contract's onchain events — real transactions only, no demo data. "Tie-break" means two or more agents shared the top score and the contract's fixed hash rule picked the winner (see SECURITY.md in the repo).</p>
       <div class="history-wrap"><table class="history">
         <thead><tr><th>Round</th><th>Winner</th><th>Entries</th><th>Prize pool</th><th>Burned</th><th>Settle tx</th><th>Claims</th></tr></thead>
         <tbody id="history-body"><tr><td colspan="7">Loading onchain history…</td></tr></tbody>
@@ -278,33 +339,89 @@
   const agentIds = { 'Momentum': 1, 'Mean-reversion': 2, 'Breakout': 3 };
   let pickedAgent = 'Breakout';
   const feedEl = document.getElementById('fight-feed');
-  // Fight engine: fighters take turns — attacker lunges, defender shakes,
-  // impact burst pops, arena shakes, commentary follows the action.
-  // Visual only: hit counts never change the real $WIF bars from chain.
+  // Visual only. Fighters idle until a pick, then fight on their own in the
+  // last 5 minutes. Hit counts never change the real $WIF bars from chain.
+  // ?debug=fight forces that closing bout. &lead=momentum|mean-reversion|breakout|tie
+  // biases it. The chain script fills arenaPreview from the live scoreboard.
   const fighters = ['Momentum','Mean-reversion','Breakout'];
   const hits = { 'Momentum': 0, 'Mean-reversion': 0, 'Breakout': 0 };
   const verbs = ['lands a clean punch on', 'slams into', 'catches', 'rocks', 'drops a combo on'];
   const bursts = ['💥', '💢', '⭐', '🔥'];
+  const reactClass = { 'Momentum': 'react-momentum', 'Mean-reversion': 'react-mean', 'Breakout': 'react-breakout' };
+  const reactLine = {
+    'Momentum': 'Momentum drops into a wide stance.',
+    'Mean-reversion': 'Mean-reversion dips, then flexes back up.',
+    'Breakout': 'Breakout lunges with a short punch.'
+  };
   const arenaEl = document.querySelector('section[aria-label="Fight arena"]');
   const scoreEl = document.getElementById('fight-score');
-  const toggleBtn = document.getElementById('fight-toggle');
-  const nowBtn = document.getElementById('fight-now');
+  const leadNote = document.getElementById('lead-note');
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let fightTimer = null, fighting = false;
+  const FINAL_MS = 5 * 60 * 1000;
+  const debugQuery = new URLSearchParams(location.search);
+  const debugFlags = new Set((debugQuery.get('debug') || '').toLowerCase().split(/[\s,]+/).filter(Boolean));
+  const leadAlias = { momentum: 'Momentum', 'mean-reversion': 'Mean-reversion', mean: 'Mean-reversion', breakout: 'Breakout', tie: 'tie' };
+  const ARENA_DEBUG = {
+    fight: debugFlags.has('fight'),
+    winner: debugFlags.has('winner') || debugFlags.has('winner-tie') || debugFlags.has('winner-empty') || debugFlags.has('banner'),
+    tie: debugFlags.has('winner-tie'),
+    empty: debugFlags.has('winner-empty'),
+    entry: debugFlags.has('entry'),
+    lead: leadAlias[(debugQuery.get('lead') || '').toLowerCase()] || null,
+    as: leadAlias[(debugQuery.get('as') || '').toLowerCase()] || null
+  };
+  let arenaPreview = { leader: null, tied: true };
+  let fightTimer = null, cinematic = false, phase = 'boot', reactTimer = null;
   function cardOf(name){ return document.querySelector('[data-agent="' + name + '"]'); }
   function renderScore(){
-    scoreEl.innerHTML = 'Hits landed — <b>Momentum ' + hits['Momentum'] + '</b> · <b>Mean-reversion ' + hits['Mean-reversion'] + '</b> · <b>Breakout ' + hits['Breakout'] + '</b> (visual only)';
+    scoreEl.innerHTML = 'Hits landed — <b>Momentum ' + hits['Momentum'] + '</b> · <b>Mean-reversion ' + hits['Mean-reversion'] + '</b> · <b>Breakout ' + hits['Breakout'] + '</b> (visual only, not the result)';
+  }
+  function inFinalFive(){
+    if (ARENA_DEBUG.fight) return true;
+    if (!roundEndMs) return false;
+    const left = roundEndMs - Date.now();
+    return left > 0 && left <= FINAL_MS;
+  }
+  function leaderState(){
+    if (ARENA_DEBUG.lead === 'tie') return { tied: true, name: null };
+    if (ARENA_DEBUG.lead && fighters.includes(ARENA_DEBUG.lead)) return { tied: false, name: ARENA_DEBUG.lead };
+    if (arenaPreview && arenaPreview.tied) return { tied: true, name: null };
+    if (arenaPreview && arenaPreview.leader && fighters.includes(arenaPreview.leader)) return { tied: false, name: arenaPreview.leader };
+    return { tied: true, name: null };
+  }
+  function applyLeadBadges(){
+    const show = inFinalFive() && !cinematic;
+    const L = leaderState();
+    fighters.forEach(n => { cardOf(n).querySelector('.lead-badge').hidden = true; });
+    if (!show) { leadNote.hidden = true; return; }
+    leadNote.hidden = false;
+    if (L.tied) {
+      leadNote.textContent = 'Unofficial preview — not the result. The live scoreboard has all three agents tied, so this fight is even. settle() on the contract computes the winner from pool prices. Nobody chooses it.';
+    } else {
+      leadNote.textContent = 'Unofficial preview — not the result. Currently leading (unofficial preview): ' + L.name + '. The animation leans toward that agent. settle() on the contract computes the real winner from pool prices. Nobody chooses it.';
+      cardOf(L.name).querySelector('.lead-badge').hidden = false;
+    }
+  }
+  function pickAttacker(L){
+    if (L.tied || !L.name) return fighters[Math.floor(Math.random() * 3)];
+    if (Math.random() < 0.7) return L.name;
+    const others = fighters.filter(n => n !== L.name);
+    return others[Math.floor(Math.random() * others.length)];
   }
   function fightRound(){
-    if (reduceMotion) return;
-    const attacker = fighters[Math.floor(Math.random() * 3)];
-    let defender = fighters[Math.floor(Math.random() * 3)];
-    if (defender === attacker) defender = fighters[(fighters.indexOf(attacker) + 1) % 3];
+    if (reduceMotion || cinematic || !inFinalFive()) return;
+    const L = leaderState();
+    const attacker = pickAttacker(L);
+    const pool = fighters.filter(n => n !== attacker);
+    const defender = pool[Math.floor(Math.random() * pool.length)];
     const aCard = cardOf(attacker), dCard = cardOf(defender);
     const verb = verbs[Math.floor(Math.random() * verbs.length)];
-    feedEl.innerHTML = '🥊 <b>ARENA:</b> ' + attacker + ' lunges at ' + defender + '…';
+    const lean = L.tied ? 'Even fight — all tied. ' : ('Currently leading (unofficial preview): ' + L.name + '. ');
+    fighters.forEach(n => cardOf(n).classList.remove('attack','defend','react-momentum','react-mean','react-breakout'));
+    feedEl.innerHTML = '🥊 <b>ARENA:</b> unofficial preview — ' + attacker + ' lunges at ' + defender + '… ' + lean + 'Not the result.';
     aCard.classList.add('attack');
     setTimeout(() => {
+      if (cinematic || !inFinalFive()) return;
       aCard.classList.remove('attack');
       dCard.classList.remove('defend'); void dCard.offsetWidth; dCard.classList.add('defend');
       const burst = dCard.querySelector('.impact');
@@ -312,21 +429,78 @@
       burst.classList.remove('show'); void burst.offsetWidth; burst.classList.add('show');
       arenaEl.classList.remove('arena-shake'); void arenaEl.offsetWidth; arenaEl.classList.add('arena-shake');
       hits[attacker]++; renderScore();
-      feedEl.innerHTML = '🥊 <b>ARENA:</b> ' + attacker + ' ' + verb + ' ' + defender + '! ' + defender + ' staggers — the crowd goes wild.';
+      feedEl.innerHTML = '🥊 <b>ARENA:</b> unofficial preview — ' + attacker + ' ' + verb + ' ' + defender + '. ' + lean + 'settle() computes the winner. Not the result.';
       setTimeout(() => dCard.classList.remove('defend'), 500);
     }, 380);
   }
-  function startFight(){
-    if (fightTimer || reduceMotion) return;
-    fighting = true; toggleBtn.textContent = '⏸ Pause fight';
+  function stopClosingFight(restoreIdle){
+    clearInterval(fightTimer); fightTimer = null;
+    if (restoreIdle && !cinematic) {
+      fighters.forEach(n => {
+        const c = cardOf(n);
+        c.classList.remove('attack','defend','ko','winner','react-momentum','react-mean','react-breakout');
+        c.classList.add('idle');
+      });
+      document.querySelectorAll('.confetti').forEach(el => el.remove());
+    }
+  }
+  function startClosingFight(){
+    applyLeadBadges();
+    if (cinematic || fightTimer) return;
+    const L = leaderState();
+    if (reduceMotion) {
+      feedEl.innerHTML = L.tied
+        ? '🥊 <b>ARENA:</b> final 5 minutes. Unofficial preview — all tied, so the fight would be even. Reduced motion is on, so the fighters stay idle. This is not the result.'
+        : '🥊 <b>ARENA:</b> final 5 minutes. Unofficial preview — currently leading: ' + L.name + '. Reduced motion is on, so the fighters stay idle. This is not the result.';
+      return;
+    }
+    document.querySelectorAll('.confetti').forEach(el => el.remove());
+    fighters.forEach(n => {
+      const c = cardOf(n);
+      c.classList.remove('ko','winner');
+      c.classList.add('idle');
+    });
     fightTimer = setInterval(fightRound, 3200);
     fightRound();
   }
-  function stopFight(){
-    fighting = false; toggleBtn.textContent = '▶ Resume fight';
-    clearInterval(fightTimer); fightTimer = null;
+  function syncArenaPhase(){
+    const final = inFinalFive();
+    if (cinematic) { applyLeadBadges(); return; }
+    if (final) {
+      if (phase !== 'final') startClosingFight();
+      else applyLeadBadges();
+      phase = 'final';
+    } else {
+      const wasFinal = phase === 'final';
+      if (wasFinal || fightTimer) stopClosingFight(wasFinal);
+      applyLeadBadges();
+      if (wasFinal) {
+        const ended = roundEndMs && Date.now() >= roundEndMs && !ARENA_DEBUG.fight;
+        feedEl.innerHTML = ended
+          ? '🥊 <b>ARENA:</b> the hour is over. Fighters are idle. Anyone can call settle() — the contract computes the winner from the recorded pool prices. Nobody chooses it.'
+          : '🥊 <b>ARENA:</b> the fighters are idle. Tap an agent to back it and see a short reaction. They fight on their own only in the last 5 minutes — an unofficial scoreboard preview, not the result.';
+      }
+      phase = 'idle';
+    }
   }
-  toggleBtn.addEventListener('click', () => { fighting ? stopFight() : startFight(); });
+  function playPickReaction(name){
+    if (inFinalFive() || cinematic) return;
+    fighters.forEach(n => cardOf(n).classList.remove('ko','winner','attack','defend'));
+    document.querySelectorAll('.confetti').forEach(el => el.remove());
+    const line = reactLine[name] || (name + ' reacts.');
+    if (reduceMotion) {
+      feedEl.innerHTML = '🥊 <b>ARENA:</b> you picked ' + name + '. ' + line + ' Reduced motion is on, so the fighter stays still. The contract computes the round winner — this pick does not.';
+      return;
+    }
+    clearTimeout(reactTimer);
+    fighters.forEach(n => cardOf(n).classList.remove('react-momentum','react-mean','react-breakout','attack','defend'));
+    const c = cardOf(name);
+    const cls = reactClass[name];
+    if (!cls) return;
+    c.classList.remove(cls); void c.offsetWidth; c.classList.add(cls);
+    feedEl.innerHTML = '🥊 <b>ARENA:</b> ' + line + ' The others stay idle. Backing an agent does not choose the winner — settle() on the contract does, from pool prices.';
+    reactTimer = setTimeout(() => { c.classList.remove(cls); }, 1000);
+  }
   // Full-fight cinematic: scripted bout that ends with ONE winner.
   // Demo only — it never changes the real $WIF bars or the real round result.
   const fullBtn = document.getElementById('fight-full');
@@ -337,7 +511,7 @@
   }
   async function strike(att, def){
     const aCard = cardOf(att), dCard = cardOf(def);
-    feedEl.innerHTML = '🥊 <b>ARENA:</b> ' + att + ' lunges at ' + def + '…';
+    feedEl.innerHTML = '🎬 <b>DEMO:</b> ' + att + ' lunges at ' + def + '… (scripted, not the result)';
     aCard.classList.add('attack'); await sleep(380);
     aCard.classList.remove('attack');
     dCard.classList.remove('defend'); void dCard.offsetWidth; dCard.classList.add('defend');
@@ -345,7 +519,7 @@
     burst.textContent = '💥'; burst.classList.remove('show'); void burst.offsetWidth; burst.classList.add('show');
     arenaEl.classList.remove('arena-shake'); void arenaEl.offsetWidth; arenaEl.classList.add('arena-shake');
     hits[att]++; renderScore();
-    feedEl.innerHTML = '🥊 <b>ARENA:</b> ' + att + ' lands a heavy hit on ' + def + '!';
+    feedEl.innerHTML = '🎬 <b>DEMO:</b> ' + att + ' lands a heavy hit on ' + def + '. Scripted only — not the result.';
     await sleep(650); dCard.classList.remove('defend');
   }
   function knockOut(name){
@@ -353,7 +527,7 @@
     const burst = c.querySelector('.impact');
     burst.textContent = '💫'; burst.classList.remove('show'); void burst.offsetWidth; burst.classList.add('show');
     c.classList.add('ko');
-    feedEl.innerHTML = '🥊 <b>ARENA:</b> ' + name + ' is KNOCKED OUT! 💫';
+    feedEl.innerHTML = '🎬 <b>DEMO:</b> ' + name + ' is knocked out in this scripted fight. Not the result.';
   }
   function celebrate(name){
     const c = cardOf(name); c.classList.add('winner');
@@ -365,75 +539,100 @@
       s.style.animationDelay = (Math.random() * 0.7) + 's';
       arenaEl.appendChild(s);
     }
-    feedEl.innerHTML = '🏆 <b>WINNER:</b> ' + name + ' takes the fight! (Demo animation only — the real round winner is settled onchain at the end of the hour.)';
+    feedEl.innerHTML = '🏆 <b>DEMO:</b> ' + name + ' takes this scripted fight. Demo animation only — the real round winner is computed onchain when anyone calls settle().';
   }
   async function playFullFight(){
     if (fullBtn.disabled) return;
-    fullBtn.disabled = true; stopFight();
+    fullBtn.disabled = true;
+    cinematic = true;
+    stopClosingFight(false);
     clearCinematic(); renderScore();
+    applyLeadBadges();
     const winner = fighters[Math.floor(Math.random() * 3)];
     const losers = fighters.filter(n => n !== winner);
-    feedEl.innerHTML = '🎬 <b>THE FIGHT BEGINS…</b> three fighters enter, only one leaves standing.';
-    await sleep(1100);
-    await strike(winner, losers[0]); await strike(losers[0], winner); await strike(winner, losers[0]);
-    knockOut(losers[0]); await sleep(1300);
-    await strike(winner, losers[1]); await strike(losers[1], winner); await strike(losers[1], winner); await strike(winner, losers[1]);
-    knockOut(losers[1]); await sleep(1300);
+    feedEl.innerHTML = '🎬 <b>DEMO:</b> a scripted fight begins. This is not the round, and it does not choose a winner. The contract does that at settle().';
+    await sleep(reduceMotion ? 200 : 1100);
+    if (!reduceMotion) {
+      await strike(winner, losers[0]); await strike(losers[0], winner); await strike(winner, losers[0]);
+    }
+    knockOut(losers[0]); await sleep(reduceMotion ? 200 : 1300);
+    if (!reduceMotion) {
+      await strike(winner, losers[1]); await strike(losers[1], winner); await strike(losers[1], winner); await strike(winner, losers[1]);
+    }
+    knockOut(losers[1]); await sleep(reduceMotion ? 200 : 1300);
     celebrate(winner);
-    fullBtn.disabled = false; fullBtn.textContent = '🔁 Replay full fight';
+    fullBtn.disabled = false; fullBtn.textContent = 'Demo: replay scripted fight (not the result)';
+    await sleep(reduceMotion ? 300 : 1600);
+    cinematic = false;
+    phase = 'boot';
+    syncArenaPhase();
   }
   fullBtn.addEventListener('click', playFullFight);
   document.getElementById('winner-demo-btn').addEventListener('click', () => {
     const wv = document.getElementById('winner-video');
     const wvEl = document.getElementById('winner-video-el');
-    document.getElementById('winner-video-title').textContent = '🏆 Demo: Momentum wins';
+    document.getElementById('winner-video-title').textContent = 'Demo clip: Momentum win video';
     wvEl.src = 'assets/fight-momentum-wins.mp4'; wvEl.style.display = 'block';
-    document.getElementById('winner-video-note').textContent = 'Demo preview only — this does NOT mean Momentum won the live round. The real winner video appears only after the round is settled onchain.';
+    document.getElementById('winner-video-note').textContent = 'Demo clip only. This does not mean Momentum won the live round. The settled-round banner uses the previous round from the contract, and only for about the first 10 minutes of the next round.';
     wv.classList.add('show'); wv.scrollIntoView({ behavior: 'smooth', block: 'center' });
     wvEl.play().catch(() => {});
   });
   document.getElementById('winner-demo-btn-2').addEventListener('click', () => {
     const wv = document.getElementById('winner-video');
     const wvEl = document.getElementById('winner-video-el');
-    document.getElementById('winner-video-title').textContent = '🏆 Demo: Mean-reversion wins';
+    document.getElementById('winner-video-title').textContent = 'Demo clip: Mean-reversion win video';
     wvEl.src = 'assets/fight-mean-reversion-wins.mp4'; wvEl.style.display = 'block';
-    document.getElementById('winner-video-note').textContent = 'Demo preview only — this does NOT mean Mean-reversion won the live round. The real winner video appears only after the round is settled onchain.';
+    document.getElementById('winner-video-note').textContent = 'Demo clip only. This does not mean Mean-reversion won the live round. The settled-round banner uses the previous round from the contract, and only for about the first 10 minutes of the next round.';
     wv.classList.add('show'); wv.scrollIntoView({ behavior: 'smooth', block: 'center' });
     wvEl.play().catch(() => {});
   });
   document.getElementById('winner-demo-btn-3').addEventListener('click', () => {
     const wv = document.getElementById('winner-video');
     const wvEl = document.getElementById('winner-video-el');
-    document.getElementById('winner-video-title').textContent = '🏆 Demo: Breakout wins';
+    document.getElementById('winner-video-title').textContent = 'Demo clip: Breakout win video';
     wvEl.src = 'assets/fight-breakout-wins.mp4'; wvEl.style.display = 'block';
-    document.getElementById('winner-video-note').textContent = 'Demo preview only — this does NOT mean Breakout won the live round. The real winner video appears only after the round is settled onchain.';
+    document.getElementById('winner-video-note').textContent = 'Demo clip only. This does not mean Breakout won the live round. The settled-round banner uses the previous round from the contract, and only for about the first 10 minutes of the next round.';
     wv.classList.add('show'); wv.scrollIntoView({ behavior: 'smooth', block: 'center' });
     wvEl.play().catch(() => {});
   });
-  nowBtn.addEventListener('click', fightRound);
   renderScore();
-  if (!reduceMotion) startFight(); else { feedEl.innerHTML = '🥊 <b>ARENA:</b> reduced-motion is on — hit “Fight now!” to play one round.'; }
+  if (reduceMotion) feedEl.innerHTML = '🥊 <b>ARENA:</b> reduced motion is on, so the fighters stay still. Tap an agent to back it. In the last 5 minutes the page names the unofficial scoreboard leader without playing the fight.';
   cards.forEach(c => c.addEventListener('click', () => {
     cards.forEach(x => x.classList.remove('selected'));
     c.classList.add('selected');
     pickedAgent = c.dataset.agent;
     document.getElementById('pick-title').textContent = 'Your pick: ' + pickedAgent;
+    playPickReaction(pickedAgent);
   }));
   const amountInput = document.getElementById('amount-input');
   const pickAmountEl = document.getElementById('pick-amount');
   amountInput.addEventListener('input', () => { pickAmountEl.textContent = amountInput.value || '0'; });
   let roundEndMs = 0;
   function tick(){
-    if (!roundEndMs){ return; }
-    let d = Math.max(0, roundEndMs - Date.now());
-    const h = Math.floor(d / 3600000); d -= h * 3600000;
-    const m = Math.floor(d / 60000); d -= m * 60000;
-    const s = Math.floor(d / 1000);
-    document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
-    document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
-    document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
+    if (roundEndMs) {
+      let d = Math.max(0, roundEndMs - Date.now());
+      const h = Math.floor(d / 3600000); d -= h * 3600000;
+      const m = Math.floor(d / 60000); d -= m * 60000;
+      const s = Math.floor(d / 1000);
+      document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
+      document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
+      document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
+    }
+    syncArenaPhase();
   }
   setInterval(tick, 1000);
+  if (ARENA_DEBUG.fight || ARENA_DEBUG.winner || ARENA_DEBUG.entry) {
+    const note = document.getElementById('debug-note');
+    const bits = [];
+    if (ARENA_DEBUG.fight) bits.push('final-5-minute fight is forced' + (ARENA_DEBUG.lead ? ' (lead=' + ARENA_DEBUG.lead + ')' : ''));
+    if (ARENA_DEBUG.tie) bits.push('tie banner is forced');
+    else if (ARENA_DEBUG.empty) bits.push('no-contest banner is forced');
+    else if (ARENA_DEBUG.winner) bits.push('previous-round banner ignores the 10-minute window' + (ARENA_DEBUG.as ? ' (as=' + ARENA_DEBUG.as + ')' : ''));
+    if (ARENA_DEBUG.entry) bits.push('entry status shows step 2 plus waiting for confirmation');
+    note.hidden = false;
+    note.textContent = 'Debug preview — ' + bits.join('; ') + '. This is not live round state. Remove ?debug= to see the real page.';
+  }
+  syncArenaPhase();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.0/dist/ethers.umd.min.js" integrity="sha384-JjzOKxQsr+Jhx75Ot1XldVFnWF2UCtB4Ig2JuEcuBt4VAdUG6alucV+sHrYjPn5C" crossorigin="anonymous"></script>
 <script>
@@ -473,7 +672,6 @@
   ];
   const EXPLORER = 'https://robinhoodchain.blockscout.com/tx/';
   const AGENT_NAMES = ['', 'Momentum', 'Mean-reversion', 'Breakout'];
-  const statusEl = document.getElementById('play-status');
   const connectBtn = document.getElementById('connect-btn');
   const enterBtn = document.getElementById('enter-btn');
   const claimBtn = document.getElementById('claim-btn');
@@ -490,13 +688,173 @@
   let logsCache = [];         // all V3 logs, parsed
   let logsToBlock = V3_DEPLOY_BLOCK - 1;
   let claimable = [];         // [{ roundId, amount }]
-  function setStatus(html){ statusEl.innerHTML = html; }
+  const statusStepEl = document.getElementById('status-step');
+  const statusDetailEl = document.getElementById('status-detail');
+  function setStatus(html){
+    statusStepEl.textContent = '';
+    statusDetailEl.innerHTML = html || '';
+  }
+  function setEntryStatus(step, detail){
+    statusStepEl.textContent = step || '';
+    statusDetailEl.innerHTML = detail || '';
+  }
   function short(addr){ return addr.slice(0,6) + '…' + addr.slice(-4); }
   function fmt(n){ return Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
   function wifNum(raw){ return Number(ethers.formatUnits(raw, 18)); }
   function txLink(h, label){ return '<a href="' + EXPLORER + h + '" target="_blank" rel="noopener">' + (label || (h.slice(0,10) + '…')) + '</a>'; }
   function mmss(sec){ sec = Math.max(0, Math.ceil(sec)); return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); }
   function chainNow(){ return Math.floor(Date.now() / 1000); }
+
+  const WIN_VIDEOS = { 1: 'assets/fight-momentum-wins.mp4', 2: 'assets/fight-mean-reversion-wins.mp4', 3: 'assets/fight-breakout-wins.mp4' };
+  const bannerEl = document.getElementById('winner-banner');
+  const bannerTitle = document.getElementById('winner-banner-title');
+  const bannerNote = document.getElementById('winner-banner-note');
+  const bannerDebug = document.getElementById('winner-banner-debug');
+  const bannerVideo = document.getElementById('winner-banner-video');
+  let bannerKey = '';
+  let bannerHiddenKey = '';
+  function hideWinnerBanner(){
+    bannerEl.classList.remove('show');
+    bannerVideo.hidden = true;
+    try { bannerVideo.pause(); } catch (e) {}
+  }
+  function rememberedDismiss(key){
+    if (bannerHiddenKey === key) return true;
+    if (ARENA_DEBUG.winner) return false;
+    try { return sessionStorage.getItem('wifArenaDismissedRound') === key; } catch (e) { return false; }
+  }
+  function showWinnerBanner(view){
+    if (!view || rememberedDismiss(view.key)) return;
+    bannerKey = view.key;
+    bannerEl.classList.add('show');
+    bannerTitle.textContent = view.title;
+    bannerNote.textContent = view.note;
+    bannerDebug.hidden = !view.debug;
+    bannerDebug.textContent = view.debug || '';
+    if (view.video) {
+      bannerVideo.hidden = false;
+      if (bannerVideo.getAttribute('src') !== view.video) {
+        bannerVideo.src = view.video;
+        bannerVideo.muted = true;
+        if (!reduceMotion) bannerVideo.play().catch(() => {});
+      }
+    } else if (bannerVideo.getAttribute('src')) {
+      bannerVideo.pause();
+      bannerVideo.removeAttribute('src');
+      bannerVideo.hidden = true;
+    } else {
+      bannerVideo.hidden = true;
+    }
+  }
+  document.getElementById('winner-dismiss').addEventListener('click', () => {
+    bannerHiddenKey = bannerKey;
+    if (bannerKey && !ARENA_DEBUG.winner) {
+      try { sessionStorage.setItem('wifArenaDismissedRound', bannerKey); } catch (e) {}
+    }
+    hideWinnerBanner();
+  });
+  function bannerFromRound(prev, opts){
+    opts = opts || {};
+    const id = prev ? prev.roundId : 'preview';
+    const label = id === 'preview' ? 'Preview' : ('Round ' + id);
+    const names = prev ? prev.scores.map((s, i) => ({ name: AGENT_NAMES[i + 1], score: s })) : [];
+    const realWinner = prev && prev.winner >= 1 && prev.winner <= 3 ? AGENT_NAMES[prev.winner] : null;
+    let mode = 'win';
+    if (prev && prev.noBackers) mode = 'empty';
+    else if (prev && prev.tie) mode = 'tie';
+    else if (!prev || !prev.settled || !realWinner) mode = 'none';
+    if (opts.forceEmpty) mode = 'empty';
+    else if (opts.forceTie) mode = 'tie';
+    else if (opts.forceName) mode = 'win';
+    if (mode === 'none') return null;
+    const shown = opts.forceName || realWinner || 'the recorded agent';
+    const debugBits = [];
+    if (ARENA_DEBUG.winner) debugBits.push('Debug preview. On the live site this banner shows for about the first 10 minutes after settle, then hides.');
+    if (opts.forceEmpty || opts.forceTie || opts.forceName) debugBits.push('This layout was forced with a ?debug query and may not match the onchain result.');
+    if (prev && prev.settled && realWinner) debugBits.push('Contract round ' + prev.roundId + ' recorded ' + realWinner + (prev.tie ? ' by tie-break' : '') + (prev.noBackers ? ' with no backers' : '') + '.');
+    const debug = debugBits.length ? debugBits.join(' ') : '';
+    if (mode === 'empty') {
+      return {
+        key: id + ':empty',
+        title: label + ' settled — no contest',
+        video: '',
+        debug: debug,
+        note: 'This settled round had no backers, so there is no prize to split and no win video. The contract still ran settle() and computed scores from pool prices, but nobody entered.' + (prev && prev.tie ? ' The scores were also tied, so the fixed hash rule recorded ' + (realWinner || 'an agent') + '.' : '') + ' Nobody chose that outcome. The next round is the live one.'
+      };
+    }
+    if (mode === 'tie') {
+      let tieLine = 'The top score was shared, so this settled as a tie.';
+      if (prev && prev.scores && prev.scores.length === 3) {
+        const best = prev.scores.reduce((m, s) => s > m ? s : m, 0n);
+        const tiedNames = names.filter(x => x.score === best).map(x => x.name);
+        if (prev.scores[0] === prev.scores[1] && prev.scores[1] === prev.scores[2]) tieLine = 'All three agents scored the same, so this settled as a tie.';
+        else if (tiedNames.length > 1) tieLine = tiedNames.join(' and ') + ' finished on the same top score, so this settled as a tie.';
+      }
+      return {
+        key: id + ':tie',
+        title: label + ' settled in a tie',
+        video: '',
+        debug: debug,
+        note: tieLine + (realWinner ? ' The contract\'s fixed hash rule recorded ' + realWinner + '.' : '') + ' A tie-break is not a clean win, so there is no win video. Nobody chose the winner — settle() computed it from pool prices.'
+      };
+    }
+    const vid = WIN_VIDEOS[opts.forceName ? agentIds[opts.forceName] : prev.winner] || '';
+    let note = 'Settled onchain. The contract computed ' + shown + ' as the winner from pool prices when settle() ran. This clip is that round\'s win video. It is not a person picking the winner. The banner stays up for about the first 10 minutes of the next round.';
+    if (!opts.forceName && prev && prev.winnerTotals && prev.winner >= 1 && prev.winnerTotals[prev.winner - 1] === 0n && !prev.noBackers) {
+      note += ' Nobody backed ' + AGENT_NAMES[prev.winner] + ', so that prize cannot be claimed.';
+    }
+    if (reduceMotion) note += ' Reduced motion is on, so the video waits for you to press play.';
+    return { key: id + ':win:' + shown, title: label + ' winner: ' + shown, video: vid, debug: debug, note: note };
+  }
+  async function renderPreviousBanner(arena, currentId, currentStart){
+    const inWindow = (chainNow() - currentStart) < 600;
+    let prev = null;
+    if (currentId > 1) {
+      const prevId = currentId - 1;
+      const [pInfo, s1, s2, s3, t1, t2, t3] = await Promise.all([
+        arena.roundInfo(prevId),
+        arena.agentScore(prevId, 1),
+        arena.agentScore(prevId, 2),
+        arena.agentScore(prevId, 3),
+        arena.agentTotal(prevId, 1),
+        arena.agentTotal(prevId, 2),
+        arena.agentTotal(prevId, 3)
+      ]);
+      const scores = [s1, s2, s3];
+      let best = scores[0];
+      for (const s of scores) if (s > best) best = s;
+      const tieCount = scores.filter(s => s === best).length;
+      prev = {
+        roundId: prevId,
+        settled: Boolean(pInfo[2]),
+        winner: Number(pInfo[3]),
+        noBackers: pInfo[6] === 0n || pInfo[5] === 0n,
+        tie: Boolean(pInfo[2]) && tieCount > 1,
+        scores: scores,
+        winnerTotals: [t1, t2, t3]
+      };
+    }
+    const force = ARENA_DEBUG.winner;
+    const view = bannerFromRound(prev, {
+      forceEmpty: ARENA_DEBUG.empty,
+      forceTie: ARENA_DEBUG.tie && !ARENA_DEBUG.empty,
+      forceName: (!ARENA_DEBUG.empty && !ARENA_DEBUG.tie && ARENA_DEBUG.as && ARENA_DEBUG.as !== 'tie') ? ARENA_DEBUG.as : ''
+    });
+    if (!force && (!inWindow || !prev || !prev.settled)) { hideWinnerBanner(); return; }
+    if (!view) {
+      if (force) {
+        showWinnerBanner({
+          key: 'offline',
+          title: 'Settled-round banner',
+          video: '',
+          debug: 'Debug preview. Previous-round data was not available. Use ?debug=winner-tie, ?debug=winner-empty, or ?debug=winner&as=momentum to force a layout.',
+          note: 'When chain data is available, ?debug=winner shows round currentRound-1 from roundInfo, agentScore, and agentTotal.'
+        });
+      } else hideWinnerBanner();
+      return;
+    }
+    showWinnerBanner(view);
+  }
 
   function doDisconnect(msg){
     provider = undefined; signer = undefined; userAddress = undefined; claimable = [];
@@ -551,7 +909,9 @@
       const winner = Number(l.args.winningAgent);
       const backedWinner = entries.some(e => Number(e.args.agentId) === winner);
       const sc = l.args.scores.map(x => x.toString());
-      const tie = sc.every(x => x === sc[0]);
+      let bestScore = sc[0];
+      for (const s of sc) if (BigInt(s) > BigInt(bestScore)) bestScore = s;
+      const tie = sc.filter(s => BigInt(s) === BigInt(bestScore)).length > 1;
       const claims = logsCache.filter(c => c.name === 'Claimed' && Number(c.args.roundId) === rid);
       const prizeNote = wifNum(l.args.prizePool) > 0 && !backedWinner ? ' (unclaimable — nobody backed the winner)' : '';
       return '<tr><td>' + rid + '</td><td>' + (AGENT_NAMES[winner] || winner) + (tie ? ' <small>(tie-break)</small>' : '') + '</td>' +
@@ -591,8 +951,14 @@
     const now = chainNow();
     const ended = now >= state.end;
     const needsSettle = ended && !state.settled;
-    // Enter
-    if (needsSettle) { enterBtn.disabled = true; enterBtn.textContent = 'Round ended — settle to start the next round'; }
+    if (ARENA_DEBUG.entry) {
+      enterBtn.disabled = true;
+      enterBtn.textContent = 'Step 2 of 2 — waiting for enter';
+      setEntryStatus(
+        'Step 2 of 2: enter ' + pickedAgent + ' (agent ' + agentIds[pickedAgent] + ') with ' + (amountInput.value || '0') + ' $WIF.',
+        'Enter sent: waiting for confirmation. Debug preview only — no transaction was sent. This line sits under the step prompt so the two do not overlap.'
+      );
+    } else if (needsSettle) { enterBtn.disabled = true; enterBtn.textContent = 'Round ended — settle to start the next round'; }
     else if (!signer) { enterBtn.disabled = true; enterBtn.textContent = 'Connect wallet to enter'; }
     else if (!busy) { enterBtn.disabled = false; if (!/✓/.test(enterBtn.textContent)) enterBtn.textContent = 'Enter'; }
     // Settle
@@ -667,34 +1033,28 @@
         const show = caps.map(c => (Number(c) / 1e18).toFixed(4) + 'x');
         const tied = caps[0] === caps[1] && caps[1] === caps[2];
         let leader = 0; for (let j = 1; j < 3; j++) if (caps[j] > caps[leader]) leader = j;
+        arenaPreview = { leader: tied ? null : sNames[leader], tied: tied };
+        syncArenaPhase();
         document.getElementById('scoreboard').textContent =
           'Live scoreboard (unofficial preview — settle() computes the official scores): price points ' + count + ' / 16 · ' +
-          sNames.map((n, j) => n + ' ' + show[j]).join(' · ') + ' · ' + (tied ? 'all tied (a tie is broken by a fixed onchain hash — see SECURITY.md)' : 'leading: ' + sNames[leader]) +
-          (info[2] ? ' · round settled, winner: ' + sNames[Number(info[3]) - 1] : '');
+          sNames.map((n, j) => n + ' ' + show[j]).join(' · ') + ' · ' +
+          (tied ? 'all tied (unofficial preview — an exact tie is broken by a fixed onchain hash at settle, see SECURITY.md)' : 'currently leading (unofficial preview): ' + sNames[leader]);
       } catch (e) { /* scoreboard is a bonus — totals already rendered */ }
-      // Winner video: only after the round is SETTLED onchain, and only the
-      // video of the actual settled winning agent. Until then, nothing plays.
-      const winnerVideos = { 1: 'assets/fight-momentum-wins.mp4', 2: 'assets/fight-mean-reversion-wins.mp4', 3: 'assets/fight-breakout-wins.mp4' };
-      const wv = document.getElementById('winner-video');
-      const wvEl = document.getElementById('winner-video-el');
-      const wvTitle = document.getElementById('winner-video-title');
-      const wvNote = document.getElementById('winner-video-note');
-      if (info[2] && info[3] >= 1 && info[3] <= 3) {
-        const wName = AGENT_NAMES[Number(info[3])];
-        wv.classList.add('show');
-        wvTitle.textContent = '🏆 Round ' + roundId + ' winner: ' + wName;
-        if (winnerVideos[Number(info[3])]) {
-          wvEl.src = winnerVideos[Number(info[3])]; wvEl.style.display = 'block';
-          wvNote.textContent = 'This is the official win video for this settled round — the winner was computed onchain by the contract from pool prices, not chosen by any person, and not by this video.';
-        } else {
-          wvEl.removeAttribute('src'); wvEl.style.display = 'none';
-          wvNote.textContent = 'The ' + wName + ' win video has not been uploaded yet — it will appear here automatically once it is added.';
-        }
-      } else {
-        wv.classList.remove('show');
-      }
+      // settle() starts the next round in the same transaction, so the current
+      // round is never the one that just settled. Read currentRound-1 instead
+      // and keep its banner up for the first 10 minutes of this round.
+      try { await renderPreviousBanner(arena, Number(roundId), Number(info[0])); }
+      catch (e) { if (ARENA_DEBUG.winner) { try { await renderPreviousBanner(arena, 1, 0); } catch (e2) {} } }
     } catch (e) {
       if (!state) document.getElementById('count-note').textContent = 'Could not read the live round from Robinhood Chain right now — retrying automatically.';
+      if (ARENA_DEBUG.winner) {
+        const view = bannerFromRound(null, {
+          forceEmpty: ARENA_DEBUG.empty,
+          forceTie: ARENA_DEBUG.tie && !ARENA_DEBUG.empty,
+          forceName: (!ARENA_DEBUG.empty && !ARENA_DEBUG.tie && ARENA_DEBUG.as && ARENA_DEBUG.as !== 'tie') ? ARENA_DEBUG.as : ''
+        });
+        if (view) showWinnerBanner(view);
+      }
     }
   }
   refreshChain();
@@ -773,19 +1133,25 @@
     let amountRaw;
     try { amountRaw = ethers.parseUnits(rawStr, 18); } catch (e) { setStatus('Enter a plain number of $WIF, e.g. 100.'); return; }
     try {
-      busy = true; enterBtn.disabled = true; enterBtn.textContent = 'Working…';
+      busy = true; enterBtn.disabled = true;
       const wif = new ethers.Contract(WIF, WIF_ABI, signer);
       const arena = new ethers.Contract(ARENA, ARENA_ABI, signer);
       const allowed = await wif.allowance(userAddress, ARENA);
+      const step2 = 'Step 2 of 2: enter ' + pickedAgent + ' (agent ' + agentId + ') with ' + amountNum + ' $WIF.';
       if (allowed < amountRaw) {
-        setStatus('Step 1 of 2: approve exactly ' + amountNum + ' $WIF in your wallet…');
+        const step1 = 'Step 1 of 2: approve exactly ' + amountNum + ' $WIF in your wallet.';
+        enterBtn.textContent = 'Step 1 of 2 — approve in your wallet';
+        setEntryStatus(step1, 'Your wallet should ask you to approve. Nothing moves until you sign.');
         const tx1 = await wif.approve(ARENA, amountRaw);
-        setStatus('Approve sent: ' + txLink(tx1.hash, 'view on Blockscout') + ' — waiting for confirmation…');
+        enterBtn.textContent = 'Step 1 of 2 — waiting for approval';
+        setEntryStatus(step1, 'Approval sent: ' + txLink(tx1.hash, 'view on Blockscout') + '. Waiting for confirmation.');
         await tx1.wait();
       }
-      setStatus('Step 2 of 2: enter ' + pickedAgent + ' (agent ' + agentId + ') with ' + amountNum + ' $WIF…');
+      enterBtn.textContent = 'Step 2 of 2 — confirm enter in your wallet';
+      setEntryStatus(step2, 'Your wallet should ask you to confirm the enter. Nothing moves until you sign.');
       const tx2 = await arena.enter(agentId, amountRaw);
-      setStatus('Enter sent: ' + txLink(tx2.hash, 'view on Blockscout') + ' — waiting for confirmation…');
+      enterBtn.textContent = 'Step 2 of 2 — waiting for enter';
+      setEntryStatus(step2, 'Enter sent: ' + txLink(tx2.hash, 'view on Blockscout') + '. Waiting for confirmation.');
       await tx2.wait();
       setStatus('You are in! ' + pickedAgent + ' backed with ' + amountNum + ' $WIF. Tx: ' + txLink(tx2.hash, 'view on Blockscout'));
       enterBtn.textContent = 'Entered ✓';
